@@ -6,7 +6,7 @@ import SEOSchema from "@/components/shared/SEOSchema";
 import { getOrganizationSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://scotlandtamilsraise.org"),
+  metadataBase: new URL("https://str-website-rho.vercel.app/"),
   title: {
     default:
       "Scotland Tamils Raise | Preserving Heritage & Empowering Community in Scotland",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_GB",
-    url: "https://scotlandtamilsraise.org",
+    url: "https://str-website-rho.vercel.app/",
     title: "Scotland Tamils Raise | Preserving Heritage & Empowering Community",
     description:
       "Bridging Tamil heritage and Scottish culture. Join events, language academy, youth mentorship, and community networking across Scotland.",
