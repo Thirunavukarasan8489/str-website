@@ -89,13 +89,13 @@ export default function AboutPage() {
       </section>
 
       {/* Committee Grid */}
-      <CommitteeGrid />
+      {/* <CommitteeGrid /> */}
 
       {/* Milestones Timeline */}
       <MilestonesTimeline />
 
       {/* CTA Section */}
-      <section className="py-16 bg-[#070D2B] text-center border-t border-white/10">
+      <section className="py-16 bg-[#0A1440] text-center border-t border-white/10">
         <div className="max-w-4xl mx-auto px-4">
           <h2 className="text-3xl font-serif font-bold text-white mb-4">
             Be Part of Our Journey in Scotland
