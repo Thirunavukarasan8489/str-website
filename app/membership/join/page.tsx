@@ -6,12 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { membershipSchema } from '@/lib/validators';
 import { MembershipFormData } from '@/types';
 import { MEMBERSHIP_TIERS } from '@/lib/data';
-import { CheckCircle2, ShieldCheck, ArrowRight, UserCheck, AlertCircle } from 'lucide-react';
+import { CheckCircle2, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function JoinMembershipPage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const {
     register,
@@ -28,17 +29,22 @@ export default function JoinMembershipPage() {
 
   const onSubmit = async (data: MembershipFormData) => {
     setLoading(true);
+    setApiError(null);
     try {
       const response = await fetch('/api/membership', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (response.ok) {
+      const result = await response.json();
+      if (response.ok && result.success) {
         setSubmitted(true);
+      } else {
+        setApiError(result.message || 'Registration failed. Please review input fields.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setApiError('Network error. Unable to process registration at this time.');
     } finally {
       setLoading(false);
     }
@@ -59,6 +65,13 @@ export default function JoinMembershipPage() {
               Complete your membership registration to join our community network in Scotland.
             </p>
           </div>
+
+          {apiError && (
+            <div className="mb-6 p-4 rounded-lg bg-[#8B1A2B]/20 border border-[#8B1A2B] text-[#E8C468] text-sm flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-[#8B1A2B] shrink-0" />
+              <span>{apiError}</span>
+            </div>
+          )}
 
           {submitted ? (
             <div className="py-12 text-center space-y-4">
@@ -220,9 +233,16 @@ export default function JoinMembershipPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 text-center font-bold text-[#0A1440] bg-gradient-to-r from-[#C9A227] to-[#E8C468] hover:from-[#E8C468] hover:to-[#C9A227] rounded-lg shadow-lg hover:shadow-[#C9A227]/30 transition-all text-sm uppercase tracking-wider"
+                className="w-full py-4 text-center font-bold text-[#0A1440] bg-gradient-to-r from-[#C9A227] to-[#E8C468] hover:from-[#E8C468] hover:to-[#C9A227] rounded-lg shadow-lg hover:shadow-[#C9A227]/30 transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-70"
               >
-                {loading ? 'Processing Registration...' : 'Complete Registration'}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Processing Registration...</span>
+                  </>
+                ) : (
+                  <span>Complete Registration</span>
+                )}
               </button>
             </form>
           )}

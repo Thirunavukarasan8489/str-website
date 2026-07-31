@@ -3,18 +3,42 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, MapPin, Phone, Heart, Send, CheckCircle2 } from 'lucide-react';
+import { Mail, MapPin, Phone, Heart, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleNewsletter = (e: React.FormEvent) => {
+  const handleNewsletter = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      setSubscribed(true);
-      setEmail('');
-      setTimeout(() => setSubscribed(false), 5000);
+    if (!email) return;
+
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubscribed(true);
+        setEmail('');
+        setTimeout(() => setSubscribed(false), 5000);
+      } else {
+        setErrorMsg(data.message || 'Subscription failed.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg('Network error. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -166,16 +190,32 @@ export default function Footer() {
                     type="email"
                     placeholder="Enter your email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errorMsg) setErrorMsg(null);
+                    }}
                     required
                     className="w-full px-3 py-2 text-xs rounded-lg bg-[#121F54] border border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-[#C9A227]"
                   />
                 </div>
+                {errorMsg && (
+                  <p className="text-[11px] text-[#8B1A2B] font-semibold flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3 shrink-0" />
+                    {errorMsg}
+                  </p>
+                )}
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-[#0A1440] bg-gradient-to-r from-[#C9A227] to-[#E8C468] rounded-lg hover:brightness-110 transition-all"
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-[#0A1440] bg-gradient-to-r from-[#C9A227] to-[#E8C468] rounded-lg hover:brightness-110 transition-all disabled:opacity-70"
                 >
-                  <Send className="w-3 h-3" /> Subscribe Now
+                  {loading ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <>
+                      <Send className="w-3 h-3" /> Subscribe Now
+                    </>
+                  )}
                 </button>
               </form>
             )}

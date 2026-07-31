@@ -5,13 +5,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { contactSchema } from '@/lib/validators';
 import { ContactFormData } from '@/types';
-import { MapPin, Mail, Phone, Clock, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { MapPin, Mail, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import SEOSchema from '@/components/shared/SEOSchema';
 import { getBreadcrumbSchema } from '@/lib/seo';
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const {
     register,
@@ -26,17 +27,22 @@ export default function ContactPage() {
 
   const onSubmit = async (data: ContactFormData) => {
     setLoading(true);
+    setApiError(null);
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (res.ok) {
+      const result = await res.json();
+      if (res.ok && result.success) {
         setSubmitted(true);
+      } else {
+        setApiError(result.message || 'Submission failed. Please check inputs.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setApiError('Network error. Unable to send message right now.');
     } finally {
       setLoading(false);
     }
@@ -74,6 +80,13 @@ export default function ContactPage() {
               <h2 className="text-2xl font-serif font-bold text-white mb-6">
                 Send Us a Message
               </h2>
+
+              {apiError && (
+                <div className="mb-6 p-4 rounded-lg bg-[#8B1A2B]/20 border border-[#8B1A2B] text-[#E8C468] text-sm flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-[#8B1A2B] shrink-0" />
+                  <span>{apiError}</span>
+                </div>
+              )}
 
               {submitted ? (
                 <div className="py-10 text-center space-y-3">
@@ -183,10 +196,19 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3.5 text-center font-bold text-[#0A1440] bg-gradient-to-r from-[#C9A227] to-[#E8C468] hover:from-[#E8C468] hover:to-[#C9A227] rounded-lg shadow-md transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-2"
+                    className="w-full py-3.5 text-center font-bold text-[#0A1440] bg-gradient-to-r from-[#C9A227] to-[#E8C468] hover:from-[#E8C468] hover:to-[#C9A227] rounded-lg shadow-md transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-70"
                   >
-                    <Send className="w-4 h-4" />
-                    <span>{loading ? 'Sending Message...' : 'Send Message'}</span>
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Sending Message...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        <span>Send Message</span>
+                      </>
+                    )}
                   </button>
                 </form>
               )}

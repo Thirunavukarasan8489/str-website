@@ -1,18 +1,42 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, CheckCircle2, Send } from 'lucide-react';
+import { Mail, CheckCircle2, Send, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      setSubmitted(true);
-      setEmail('');
-      setTimeout(() => setSubmitted(false), 6000);
+    if (!email) return;
+
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubmitted(true);
+        setEmail('');
+        setTimeout(() => setSubmitted(false), 6000);
+      } else {
+        setErrorMsg(data.message || 'Failed to subscribe. Please try again.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg('Network error. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,20 +69,38 @@ export default function NewsletterSignup() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email address"
-                    required
-                    className="w-full px-4 py-3 rounded-lg bg-[#0A1440] border border-white/20 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-[#C9A227]"
-                  />
+                  <div className="w-full flex-1">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (errorMsg) setErrorMsg(null);
+                      }}
+                      placeholder="Enter your email address"
+                      required
+                      className="w-full px-4 py-3 rounded-lg bg-[#0A1440] border border-white/20 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-[#C9A227]"
+                    />
+                    {errorMsg && (
+                      <p className="mt-1 text-xs text-[#8B1A2B] font-semibold flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        {errorMsg}
+                      </p>
+                    )}
+                  </div>
                   <button
                     type="submit"
-                    className="px-6 py-3 font-bold text-[#0A1440] bg-gradient-to-r from-[#C9A227] to-[#E8C468] hover:from-[#E8C468] hover:to-[#C9A227] rounded-lg transition-all shadow-md shrink-0 flex items-center justify-center gap-1.5"
+                    disabled={loading}
+                    className="px-6 py-3 font-bold text-[#0A1440] bg-gradient-to-r from-[#C9A227] to-[#E8C468] hover:from-[#E8C468] hover:to-[#C9A227] rounded-lg transition-all shadow-md shrink-0 flex items-center justify-center gap-1.5 disabled:opacity-70"
                   >
-                    <span>Subscribe</span>
-                    <Send className="w-4 h-4" />
+                    {loading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <span>Subscribe</span>
+                        <Send className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
                 </form>
               )}
