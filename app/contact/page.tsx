@@ -222,29 +222,29 @@ export default function ContactPage() {
                 </h3>
 
                 <div className="space-y-4 text-sm text-slate-200">
-                  <div className="flex items-start gap-3">
+                  {/* <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-[#C9A227] shrink-0 mt-1" />
                     <div>
                       <span className="block font-bold text-white">Edinburgh (HQ)</span>
                       <span>George Street & Crichton Street Nodes, Edinburgh</span>
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-[#C9A227] shrink-0 mt-1" />
                     <div>
-                      <span className="block font-bold text-white">Glasgow (West Node)</span>
-                      <span>West End Community Center, Sauchiehall St</span>
+                      <span className="block font-bold text-white">Glasgow, Scotland</span>
+                      <span>City Centre & West End</span>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
+                  {/* <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-[#C9A227] shrink-0 mt-1" />
                     <div>
                       <span className="block font-bold text-white">Aberdeen & Dundee</span>
                       <span>Grampian & Tayside Regional Engagement Coordinators</span>
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="flex items-start gap-3 pt-2">
                     <Mail className="w-5 h-5 text-[#C9A227] shrink-0 mt-1" />

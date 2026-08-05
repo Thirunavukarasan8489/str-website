@@ -58,7 +58,7 @@ export default function Hero() {
                 className="w-full sm:w-auto"
               >
                 <Calendar className="w-4 h-4 mr-2 text-[#C9A227]" />
-                <span>Explore Events 2026</span>
+                <span>Explore Events</span>
               </CTAButton>
             </div>
 
@@ -66,23 +66,23 @@ export default function Hero() {
             <div className="pt-8 border-t border-white/10 grid grid-cols-3 gap-4 max-w-lg mx-auto lg:mx-0">
               <div>
                 <span className="block text-2xl sm:text-3xl font-serif font-bold text-white">
-                  1,500+
+                  100+
                 </span>
                 <span className="text-xs text-slate-400 font-medium">
                   Tamil Families
                 </span>
               </div>
-              <div>
+              {/* <div>
                 <span className="block text-2xl sm:text-3xl font-serif font-bold text-[#E8C468]">
                   4 Nodes
                 </span>
                 <span className="text-xs text-slate-400 font-medium">
                   Across Scotland
                 </span>
-              </div>
+              </div> */}
               <div>
                 <span className="block text-2xl sm:text-3xl font-serif font-bold text-white">
-                  15+ Yrs
+                  1+ Yrs
                 </span>
                 <span className="text-xs text-slate-400 font-medium">
                   Community Legacy

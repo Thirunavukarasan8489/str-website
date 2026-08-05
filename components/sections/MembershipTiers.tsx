@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Check, Star, ArrowRight } from 'lucide-react';
+import { Check, Star, ArrowRight, Heart } from 'lucide-react';
 import SectionHeading from '@/components/shared/SectionHeading';
 import CTAButton from '@/components/shared/CTAButton';
 import { MEMBERSHIP_TIERS } from '@/lib/data';
@@ -14,8 +14,16 @@ export default function MembershipTiers() {
           title="Join Scotland Tamils Raise Community"
           subtitle="Select the membership plan that fits your family or individual journey. Enjoy discounted gala tickets, voting rights, and language academy placement."
         />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <CTAButton href="/contact?subject=Donation" variant="maroon">
+            <Heart className="w-4 h-4 mr-2 fill-white" />
+            <span>Donate Monthly</span>
+          </CTAButton>
+          <CTAButton href="/membership/join?tier=lifetime" variant="primary">
+            Become a Member
+          </CTAButton>
+        </div>
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {MEMBERSHIP_TIERS.map((tier) => (
             <div
               key={tier.id}
@@ -68,7 +76,7 @@ export default function MembershipTiers() {
               </CTAButton>
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
     </section>
   );

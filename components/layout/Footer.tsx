@@ -148,25 +148,25 @@ export default function Footer() {
           {/* Regional Nodes */}
           <div>
             <h3 className="text-white font-serif font-semibold text-base mb-4 border-b border-[#C9A227]/30 pb-2 inline-block">
-              Scotland Nodes
+              Location
             </h3>
             <ul className="space-y-2.5 text-sm">
-              <li className="flex items-start gap-2">
+              {/* <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#C9A227] shrink-0 mt-0.5" />
                 <span>Edinburgh (Capital Hub)</span>
-              </li>
+              </li> */}
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#C9A227] shrink-0 mt-0.5" />
-                <span>Glasgow (West Node)</span>
+                <span>Glasgow</span>
               </li>
-              <li className="flex items-start gap-2">
+              {/* <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#C9A227] shrink-0 mt-0.5" />
                 <span>Aberdeen (Grampian Node)</span>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#C9A227] shrink-0 mt-0.5" />
                 <span>Dundee & Stirling</span>
-              </li>
+              </li> */}
             </ul>
           </div>
 

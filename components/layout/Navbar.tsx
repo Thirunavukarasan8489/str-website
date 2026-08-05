@@ -90,7 +90,7 @@ export default function Navbar() {
               className="flex items-center gap-1.5 px-3.5 py-2 text-xs md:text-sm font-semibold text-white bg-[#8B1A2B] hover:bg-[#a31f33] rounded-lg transition-colors shadow-sm"
             >
               <Heart className="w-3.5 h-3.5 fill-white text-white" />
-              <span>Donate</span>
+              <span>Donate Now</span>
             </Link>
             <Link
               href="/membership/join"

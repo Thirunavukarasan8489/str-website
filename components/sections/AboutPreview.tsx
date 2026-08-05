@@ -15,29 +15,30 @@ export default function AboutPreview() {
   const pillars = [
     {
       icon: BookOpen,
-      title: "Tamil Language & Literature",
+      title: "Education & Language",
       description:
-        "Preserving classical Tamil literature, Thirukkural recitations, and running weekend language classes for children in Edinburgh, Glasgow, and Aberdeen.",
+        "Preserving classical Tamil literature, Thirukkural recitations, and running weekend language classes and workshops across Scottish cities.",
     },
     {
       icon: Sparkles,
-      title: "Cultural Arts & Festivals",
+      title: "Culture & Heritage",
       description:
-        "Hosting vibrant festivals including Grand Pongal, Chithirai Tamil New Year Gala, Deepavali recitals, Bharatanatyam, and Parai Attam folk dance.",
+        "Hosting vibrant festivals including Grand Pongal, Chithirai Tamil New Year, arts showcases, Bharatanatyam, and Parai Attam folk recitals.",
     },
     {
       icon: Users,
-      title: "Youth & Mentorship Network",
+      title: "Youth & Sports Development",
       description:
-        "Empowering young Scottish Tamils with career mentorship, university leadership summits, STEM guidance, and professional networking.",
+        "Empowering Tamil youth in Scotland with sports tournaments, career mentorship, university leadership summits, and STEM guidance.",
     },
     {
       icon: HeartHandshake,
-      title: "Scottish Integration & Charity",
+      title: "Community Welfare & Inclusion",
       description:
-        "Fostering civic unity, participating in Highland charity walks, blood donation drives, and collaborating with local Scottish councils.",
+        "Providing guidance and support for Tamil asylum seekers, refugees, and students, while fostering civic integration across Scotland under strict non-discrimination.",
     },
   ];
+
 
   return (
     <section className="py-20 bg-[#0A1440] relative">

@@ -21,25 +21,25 @@ export default function DonatePage() {
   const impactAreas = [
     {
       icon: BookOpen,
-      amount: '£25',
+      amount: '£5',
       title: 'Tamil Language School Supplies',
       description: 'Provides textbooks, Thirukkural workbooks, and flashcards for two children in our weekend academy.',
     },
     {
       icon: Sparkles,
-      amount: '£50',
+      amount: '£10',
       title: 'Youth Mentorship & STEM Grant',
       description: 'Sponsors university entrance mentorship and career guidance workshops for young Scottish Tamils.',
     },
     {
       icon: Heart,
-      amount: '£100',
+      amount: '£15',
       title: 'Community Festival Subsidies',
       description: 'Helps keep ticket prices accessible for low-income families and seniors at Grand Pongal & Chithirai Vizha.',
     },
     {
       icon: Award,
-      amount: '£250+',
+      amount: '£20+',
       title: 'Patron Heritage Fund',
       description: 'Supports long-term cultural hub facilities, library archives, and Highland charity initiatives.',
     },
@@ -111,10 +111,10 @@ export default function DonatePage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <CTAButton href="/contact?subject=Donation" variant="maroon">
                 <Heart className="w-4 h-4 mr-2 fill-white" />
-                <span>Contact Treasurer for Gift Aid</span>
+                <span>Donate Now</span>
               </CTAButton>
               <CTAButton href="/membership/join?tier=lifetime" variant="primary">
-                Become a Lifetime Patron (£250)
+                Become a Member
               </CTAButton>
             </div>
           </div>

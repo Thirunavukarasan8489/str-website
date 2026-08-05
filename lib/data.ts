@@ -201,17 +201,17 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     id: 'mem-1',
     name: 'Dr. Selvanathan Ketheeswaran',
-    role: 'President & Executive Lead',
-    bio: 'Senior NHS Consultant & Community Advocate with over 15 years leading cultural integration programs in Scotland.',
+    role: 'Chairperson & Trustee',
+    bio: 'Senior NHS Consultant & Community Lead heading board governance and organizational vision in Scotland.',
     imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
     city: 'Edinburgh',
-    email: 'president@scotlandtamilsraise.org',
+    email: 'chairperson@scotlandtamilsraise.org',
   },
   {
     id: 'mem-2',
     name: 'Mrs. Priya Sundaram',
-    role: 'General Secretary',
-    bio: 'Software Engineering Manager in Glasgow passionate about youth education, Tamil literature, and women in technology.',
+    role: 'Secretary & Trustee',
+    bio: 'Software Engineering Manager in Glasgow passionate about youth education, Tamil literature, and administrative stewardship.',
     imageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
     city: 'Glasgow',
     email: 'secretary@scotlandtamilsraise.org',
@@ -219,8 +219,8 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     id: 'mem-3',
     name: 'Mr. Anand Subramaniam',
-    role: 'Treasurer & Finance Officer',
-    bio: 'Chartered Accountant based in Aberdeen heading compliance, charity grants, and financial stewardship for STR.',
+    role: 'Treasurer & Trustee',
+    bio: 'Chartered Accountant based in Aberdeen heading financial accounts, annual audits, and charitable compliance for STR.',
     imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
     city: 'Aberdeen',
     email: 'treasurer@scotlandtamilsraise.org',
@@ -228,8 +228,8 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     id: 'mem-4',
     name: 'Ms. Kaviya Thirumaran',
-    role: 'Youth & Cultural Secretary',
-    bio: 'Edinburgh University graduate & classical arts performer coordinating sports, youth summits, and dance recitals.',
+    role: 'Youth & Cultural Coordinator',
+    bio: 'Edinburgh University graduate & classical arts performer coordinating youth leadership, sports tournaments, and arts showcases.',
     imageUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80',
     city: 'Edinburgh',
   },
@@ -241,7 +241,7 @@ export const MEMBERSHIP_TIERS: MembershipTier[] = [
     name: 'Individual Membership',
     price: '£25',
     period: 'per year',
-    description: 'Perfect for individuals living in Scotland who want to participate in events and support Tamil culture.',
+    description: 'For individuals aged 16+ residing in Scotland who support the aims of Scotland Tamils Raise.',
     features: [
       'Discounted tickets for all STR cultural galas & Pongal events',
       'Access to members-only networking & mentorship directory',
@@ -262,7 +262,7 @@ export const MEMBERSHIP_TIERS: MembershipTier[] = [
       'Priority enrollment in Tamil Academy & youth workshops',
       'Subsidized tickets for all family cultural festivals',
       'Free entry to annual summer family picnic & sports day',
-      'Full voting rights (2 votes per family)',
+      'Full AGM voting rights (2 votes per family)',
     ],
     ctaText: 'Join as Family',
   },
@@ -271,11 +271,11 @@ export const MEMBERSHIP_TIERS: MembershipTier[] = [
     name: 'Student & Youth',
     price: '£10',
     period: 'per year',
-    description: 'Tailored for university students studying in Scotland seeking community, mentorship, and career growth.',
+    description: 'Tailored for university students studying in Scotland seeking community support, mentorship, and career growth.',
     features: [
       'Free entry to Youth & Leadership Summits',
       'Direct 1-on-1 mentorship with Scottish-Tamil professionals',
-      'Access to university Tamil society joint events',
+      'Access to student guidance & integration support',
       'Subsidized event tickets',
     ],
     ctaText: 'Join as Student',
@@ -299,18 +299,27 @@ export const MEMBERSHIP_TIERS: MembershipTier[] = [
 export const FAQS = [
   {
     question: 'What is Scotland Tamils Raise (STR)?',
-    answer: 'Scotland Tamils Raise is a non-profit community organization registered in Scotland dedicated to preserving Tamil language and heritage, supporting Tamil families, and promoting civic integration across Edinburgh, Glasgow, Aberdeen, Dundee, and surrounding areas.',
+    answer: 'Scotland Tamils Raise (STR) is an Unincorporated Organisation based in Scotland that operates as a non-profit, non-political, voluntary, and charitable community body. Its core purpose is to create a united, supportive, and progressive community that empowers Tamil people in Scotland while welcoming individuals from all cultures, languages, and backgrounds.',
   },
   {
-    question: 'Who can join Scotland Tamils Raise?',
-    answer: 'Membership is open to anyone living in or connected to Scotland who values Tamil language, culture, and community spirit regardless of background.',
+    question: 'What is STR’s policy on equality and inclusion?',
+    answer: 'As mandated by our constitution, STR operates without any discrimination based on caste, religion, gender, nationality, region, or political affiliation. We provide an inclusive platform open to all cultures.',
+  },
+  {
+    question: 'Who is eligible for membership?',
+    answer: 'Membership is open to individuals aged 16 and above who support the aims of the organisation and reside in Scotland. Members have the right to attend and vote at General Meetings, elect Trustees, and participate in all official activities.',
+  },
+  {
+    question: 'How does STR support asylum seekers, refugees, and students?',
+    answer: 'STR delivers dedicated community welfare programs, offering guidance, advocacy, integration support, and educational mentoring for Tamil asylum seekers, refugees, and university students navigating life in Scotland.',
+  },
+  {
+    question: 'How is Scotland Tamils Raise governed?',
+    answer: 'STR is governed by an elected Board of Trustees (consisting of 4 to 8 Trustees elected at the Annual General Meeting for 3-year terms) and key Office Bearers including Chairperson, Vice Chairperson, Secretary, and Treasurer.',
   },
   {
     question: 'Where are events hosted?',
     answer: 'Events are rotated across major Scottish cities including Edinburgh, Glasgow, Aberdeen, Stirling, and Dundee to ensure accessibility for all regions.',
   },
-  {
-    question: 'How do I register my children for Tamil language & arts classes?',
-    answer: 'You can sign up via our Membership portal or Contact page. Family members receive priority placement in our weekend classes.',
-  },
 ];
+
