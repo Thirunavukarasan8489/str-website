@@ -1,53 +1,15 @@
 import { NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/db';
 import GalleryItem from '@/models/GalleryItem';
-import { GALLERY_DATA } from '@/lib/data';
+import { deleteCloudinaryImage } from '@/lib/cloudinary';
 
-const CATEGORY_DEFAULT_SLUGS: Record<string, string> = {
-  Festivals: 'scotland-tamil-pongal-vizha-2026',
-  Culture: 'tamil-traditional-arts-and-culture',
-  Youth: 'youth-leadership-and-arts-academy',
-  Community: 'community-grand-banquet-glasgow',
-  Sports: 'scottish-highland-walk-and-sports',
-};
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {
     await dbConnect();
-    const count = await GalleryItem.countDocuments();
-    if (count === 0) {
-      // Seed default items
-      for (let i = 0; i < GALLERY_DATA.length; i++) {
-        const item = GALLERY_DATA[i];
-        await GalleryItem.create({
-          title: item.title,
-          category: item.category,
-          albumSlug: item.albumSlug || CATEGORY_DEFAULT_SLUGS[item.category] || '',
-          imageUrl: item.imageUrl,
-          alt: item.alt,
-          caption: item.caption,
-          date: item.date,
-          order: i,
-        });
-      }
-    } else {
-      // Backfill any photos with missing or empty albumSlug
-      const itemsWithoutSlug = await GalleryItem.find({
-        $or: [{ albumSlug: { $exists: false } }, { albumSlug: '' }, { albumSlug: null }],
-      });
-
-      if (itemsWithoutSlug.length > 0) {
-        for (const item of itemsWithoutSlug) {
-          const matchedData = GALLERY_DATA.find((g) => g.title === item.title || g.imageUrl === item.imageUrl);
-          const slug = matchedData?.albumSlug || CATEGORY_DEFAULT_SLUGS[item.category] || '';
-          if (slug) {
-            await GalleryItem.updateOne({ _id: item._id }, { $set: { albumSlug: slug } });
-          }
-        }
-      }
-    }
-
-    const items = await GalleryItem.find().sort({ order: 1, createdAt: -1 });
+    const items = await GalleryItem.find().sort({ order: 1, createdAt: -1 }).lean();
     return NextResponse.json({ success: true, items });
   } catch (error: any) {
     return NextResponse.json(
@@ -60,15 +22,14 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-
     await dbConnect();
 
     // 1. Bulk Batch Photo Insertion
     if (Array.isArray(data.items) && data.items.length > 0) {
       const itemsToInsert = data.items.map((item: any, idx: number) => ({
         title: item.title || `Photo #${idx + 1}`,
-        category: item.category || 'Festivals',
-        albumSlug: item.albumSlug || CATEGORY_DEFAULT_SLUGS[item.category] || '',
+        category: item.category || 'General',
+        albumSlug: (item.albumSlug || '').trim(),
         imageUrl: item.imageUrl,
         alt: item.alt || item.title || 'Gallery Photo',
         caption: item.caption || '',
@@ -97,8 +58,8 @@ export async function POST(request: Request) {
 
     const newItem = await GalleryItem.create({
       title: data.title,
-      category: data.category || 'Festivals',
-      albumSlug: data.albumSlug || CATEGORY_DEFAULT_SLUGS[data.category] || '',
+      category: data.category || 'General',
+      albumSlug: (data.albumSlug || '').trim(),
       imageUrl: data.imageUrl,
       alt: data.alt || data.title,
       caption: data.caption || '',
@@ -123,8 +84,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const data = await request.json();
-    const { id, _id, ...updateData } = data;
-    const itemId = id || _id;
+    const itemId = data.id || data._id;
 
     if (!itemId) {
       return NextResponse.json(
@@ -134,20 +94,37 @@ export async function PUT(request: Request) {
     }
 
     await dbConnect();
-    const updated = await GalleryItem.findByIdAndUpdate(itemId, { $set: updateData }, { new: true });
+
+    // Clean update fields to avoid modifying immutable fields like _id
+    const updateFields: Record<string, any> = {};
+    if (data.title !== undefined) updateFields.title = data.title;
+    if (data.category !== undefined) updateFields.category = data.category;
+    if (data.albumSlug !== undefined) updateFields.albumSlug = (data.albumSlug || '').trim();
+    if (data.imageUrl !== undefined) updateFields.imageUrl = data.imageUrl;
+    if (data.alt !== undefined) updateFields.alt = data.alt;
+    if (data.caption !== undefined) updateFields.caption = data.caption;
+    if (data.date !== undefined) updateFields.date = data.date;
+    if (data.order !== undefined) updateFields.order = data.order;
+    if (data.isFeatured !== undefined) updateFields.isFeatured = Boolean(data.isFeatured);
+
+    const updated = await GalleryItem.findByIdAndUpdate(
+      itemId,
+      { $set: updateFields },
+      { new: true }
+    );
 
     if (!updated) {
-      return NextResponse.json({ success: false, message: 'Item not found' }, { status: 404 });
+      return NextResponse.json({ success: false, message: 'Photo not found' }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Gallery item updated successfully',
+      message: 'Gallery photo updated successfully',
       item: updated,
     });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, message: error.message || 'Failed to update gallery item' },
+      { success: false, message: error.message || 'Failed to update gallery photo' },
       { status: 500 }
     );
   }
@@ -164,19 +141,32 @@ export async function DELETE(request: Request) {
     // Bulk deletion
     if (ids) {
       const idList = ids.split(',').map((s) => s.trim()).filter(Boolean);
+      const itemsToDelete = await GalleryItem.find({ _id: { $in: idList } });
+
+      // Delete each image from Cloudinary
+      for (const item of itemsToDelete) {
+        if (item.imageUrl) {
+          await deleteCloudinaryImage(item.imageUrl);
+        }
+      }
+
       const res = await GalleryItem.deleteMany({ _id: { $in: idList } });
       return NextResponse.json({
         success: true,
-        message: `Deleted ${res.deletedCount} photo(s) successfully`,
+        message: `Deleted ${res.deletedCount} photo(s) and cleaned from Cloudinary successfully`,
       });
     }
 
     // Single item deletion
     if (id) {
+      const item = await GalleryItem.findById(id);
+      if (item && item.imageUrl) {
+        await deleteCloudinaryImage(item.imageUrl);
+      }
       await GalleryItem.findByIdAndDelete(id);
       return NextResponse.json({
         success: true,
-        message: 'Gallery photo deleted successfully',
+        message: 'Gallery photo deleted and cleaned from Cloudinary successfully',
       });
     }
 

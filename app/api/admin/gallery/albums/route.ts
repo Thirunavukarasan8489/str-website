@@ -3,6 +3,7 @@ import { dbConnect } from '@/lib/db';
 import GalleryAlbum from '@/models/GalleryAlbum';
 import GalleryItem from '@/models/GalleryItem';
 import { GALLERY_ALBUMS_DATA } from '@/lib/data';
+import { deleteCloudinaryImage } from '@/lib/cloudinary';
 
 function generateSlug(text: string): string {
   return text
@@ -13,25 +14,12 @@ function generateSlug(text: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     await dbConnect();
-    const count = await GalleryAlbum.countDocuments();
-    if (count === 0) {
-      for (let i = 0; i < GALLERY_ALBUMS_DATA.length; i++) {
-        const alb = GALLERY_ALBUMS_DATA[i];
-        await GalleryAlbum.create({
-          title: alb.title,
-          slug: alb.slug,
-          category: alb.category,
-          description: alb.description,
-          coverImage: alb.coverImage,
-          date: alb.date,
-          order: i,
-          isPublished: true,
-        });
-      }
-    }
 
     const [albums, photos] = await Promise.all([
       GalleryAlbum.find().sort({ order: 1, createdAt: -1 }).lean(),
@@ -39,11 +27,7 @@ export async function GET() {
     ]);
 
     const enriched = albums.map((alb: any) => {
-      const albumPhotosCount = photos.filter(
-        (p: any) =>
-          p.albumSlug === alb.slug ||
-          (!p.albumSlug && p.category?.toLowerCase() === alb.category?.toLowerCase())
-      ).length;
+      const albumPhotosCount = photos.filter((p: any) => p.albumSlug === alb.slug).length;
 
       return {
         ...alb,
@@ -167,12 +151,27 @@ export async function DELETE(request: Request) {
     const album = await GalleryAlbum.findById(id);
 
     if (album) {
+      // Delete album cover from Cloudinary
+      if (album.coverImage) {
+        await deleteCloudinaryImage(album.coverImage);
+      }
+
       if (deletePhotos) {
+        // Find all photos belonging to this album and delete them from Cloudinary
+        const photosToDelete = await GalleryItem.find({ albumSlug: album.slug });
+        for (const p of photosToDelete) {
+          if (p.imageUrl) {
+            await deleteCloudinaryImage(p.imageUrl);
+          }
+        }
+        // Delete photo records from MongoDB
         await GalleryItem.deleteMany({ albumSlug: album.slug });
       } else {
-        // Unlink photos
+        // Unlink photos (keep in database & Cloudinary)
         await GalleryItem.updateMany({ albumSlug: album.slug }, { $set: { albumSlug: '' } });
       }
+
+      // Delete album from MongoDB
       await GalleryAlbum.findByIdAndDelete(id);
     }
 

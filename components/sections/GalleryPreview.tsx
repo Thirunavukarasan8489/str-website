@@ -1,87 +1,112 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Image from "next/image";
-import { Maximize2, ArrowRight } from "lucide-react";
-import SectionHeading from "@/components/shared/SectionHeading";
-import CTAButton from "@/components/shared/CTAButton";
-import Lightbox from "@/components/shared/Lightbox";
-import { GALLERY_DATA } from "@/lib/data";
+import React from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Calendar, Images, ArrowRight } from 'lucide-react';
+import SectionHeading from '@/components/shared/SectionHeading';
+import CTAButton from '@/components/shared/CTAButton';
+import { GalleryAlbum } from '@/types';
+import { GALLERY_ALBUMS_DATA } from '@/lib/data';
 
-export default function GalleryPreview() {
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+interface GalleryPreviewProps {
+  initialAlbums?: GalleryAlbum[];
+}
 
-  const previewItems = GALLERY_DATA.slice(0, 6);
-
-  const openLightbox = (index: number) => {
-    setSelectedIndex(index);
-    setLightboxOpen(true);
-  };
+export default function GalleryPreview({ initialAlbums }: GalleryPreviewProps) {
+  // Show up to 6 latest album cards
+  const previewAlbums = (
+    initialAlbums && initialAlbums.length > 0 ? initialAlbums : GALLERY_ALBUMS_DATA
+  ).slice(0, 6);
 
   return (
     <section className="py-20 bg-[#0A1440] relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <SectionHeading
-          badge="Moments & Memories"
+          badge="MOMENTS & MEMORIES"
           title="Vibrant Moments from Scottish Tamil Life"
           subtitle="A visual showcase of our cultural galas, youth performances, community feasts, and Highland excursions."
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {previewItems.map((item, index) => (
-            <div
-              key={item.id}
-              onClick={() => openLightbox(index)}
-              className="group relative h-64 rounded-xl overflow-hidden cursor-pointer border border-[#1B3A6B] hover:border-[#C9A227] shadow-lg transition-all duration-300 gold-glow-hover"
-            >
-              <Image
-                src={item.imageUrl}
-                alt={item.alt}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0A1440] via-[#0A1440]/30 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+        {previewAlbums.length === 0 ? (
+          <div className="text-center py-16 bg-[#121F54]/50 border border-[#1B3A6B] rounded-2xl p-8 space-y-3">
+            <Images className="w-12 h-12 text-slate-400 mx-auto" />
+            <h3 className="text-lg font-serif font-bold text-white">No gallery albums available</h3>
+            <p className="text-xs text-slate-400">
+              Gallery albums will appear here as soon as they are created.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {previewAlbums.map((album) => {
+              const photoCount = album.photoCount !== undefined ? album.photoCount : album.photos?.length || 0;
 
-              <div className="absolute inset-0 p-5 flex flex-col justify-between">
-                <div className="flex justify-end">
-                  <span className="p-2 rounded-full bg-black/40 text-white group-hover:bg-[#C9A227] group-hover:text-[#0A1440] transition-colors">
-                    <Maximize2 className="w-4 h-4" />
-                  </span>
-                </div>
+              return (
+                <Link
+                  key={album.id || album.slug}
+                  href={`/gallery/${album.slug}`}
+                  className="group bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl overflow-hidden shadow-xl transition-all duration-300 flex flex-col justify-between gold-glow-hover transform hover:-translate-y-1"
+                >
+                  <div>
+                    {/* Cover Image Frame */}
+                    <div className="relative h-60 w-full overflow-hidden bg-slate-900">
+                      <Image
+                        src={album.coverImage}
+                        alt={album.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0A1440] via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
 
-                <div>
-                  <span className="inline-block text-[10px] uppercase font-bold text-[#E8C468] bg-[#1B3A6B] px-2.5 py-0.5 rounded-full mb-1">
-                    {item.category}
-                  </span>
-                  <h3 className="text-base font-serif font-bold text-white group-hover:text-[#E8C468] transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-slate-300 line-clamp-1 mt-0.5">
-                    {item.caption}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+                      {/* Top Badges */}
+                      <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
+                        <span className="px-3 py-1 text-[11px] uppercase font-bold text-[#0A1440] bg-[#E8C468] rounded-full shadow-md">
+                          {album.category}
+                        </span>
 
-        <div className="text-center">
+                        <span className="px-2.5 py-1 text-[11px] font-bold text-white bg-black/60 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-1 shadow-md">
+                          <Images className="w-3.5 h-3.5 text-[#E8C468]" />
+                          <span>{photoCount} Photos</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Album Details */}
+                    <div className="p-6 space-y-2.5">
+                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                        <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
+                        <span>{album.date}</span>
+                      </div>
+
+                      <h3 className="text-xl font-serif font-bold text-white group-hover:text-[#E8C468] transition-colors leading-snug">
+                        {album.title}
+                      </h3>
+
+                      <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                        {album.description || 'Explore the complete photo collection from this celebration.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Card Bottom CTA Bar */}
+                  <div className="px-6 py-4 border-t border-white/10 flex items-center justify-between text-xs font-bold text-[#E8C468] group-hover:text-white transition-colors bg-[#0D1845]">
+                    <span>View Full Collection</span>
+                    <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform text-[#C9A227]" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="text-center pt-4">
           <CTAButton href="/gallery" variant="secondary">
-            <span>Explore Full Photo & Video Gallery</span>
+            <span>Explore All Photo & Video Collections</span>
             <ArrowRight className="w-4 h-4 ml-2" />
           </CTAButton>
         </div>
       </div>
-
-      <Lightbox
-        items={previewItems}
-        currentIndex={selectedIndex}
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-        onNavigate={(newIndex) => setSelectedIndex(newIndex)}
-      />
     </section>
   );
 }

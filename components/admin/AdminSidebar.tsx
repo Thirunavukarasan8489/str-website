@@ -44,7 +44,7 @@ export default function AdminSidebar({
     { id: 'hero', label: 'Home Hero Section', icon: HomeIcon },
     { id: 'gallery', label: 'Photo Gallery', icon: ImageIcon, badge: galleryCount },
     { id: 'news', label: 'News & Media', icon: Newspaper, badge: newsCount },
-    { id: 'leads', label: 'Leads & Inquiries', icon: Users, badge: leadsCount },
+    { id: 'leads', label: 'Leads & Enquiries', icon: Users, badge: leadsCount },
     { id: 'settings', label: 'Settings & Cloudinary', icon: Settings },
   ];
 
@@ -60,9 +60,8 @@ export default function AdminSidebar({
 
       {/* Sidebar Content */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-72 bg-[#070D2B] border-r border-[#1B3A6B] flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed top-0 bottom-0 left-0 z-50 w-72 bg-[#070D2B] border-r border-[#1B3A6B] flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         {/* Top Brand Header */}
         <div>
@@ -94,11 +93,10 @@ export default function AdminSidebar({
                     onSelectTab(item.id);
                     onClose();
                   }}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                    isActive
-                      ? 'bg-gradient-to-r from-[#C9A227] to-[#E8C468] text-[#0A1440] font-bold shadow-md shadow-[#C9A227]/20'
-                      : 'text-slate-300 hover:text-white hover:bg-[#121F54]'
-                  }`}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${isActive
+                    ? 'bg-gradient-to-r from-[#C9A227] to-[#E8C468] text-[#0A1440] font-bold shadow-md shadow-[#C9A227]/20'
+                    : 'text-slate-300 hover:text-white hover:bg-[#121F54]'
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <Icon className={`w-4 h-4 ${isActive ? 'text-[#0A1440]' : 'text-[#C9A227]'}`} />
@@ -107,9 +105,8 @@ export default function AdminSidebar({
 
                   {item.badge !== undefined && item.badge > 0 && (
                     <span
-                      className={`px-2 py-0.5 text-[10px] rounded-full font-bold ${
-                        isActive ? 'bg-[#0A1440] text-[#E8C468]' : 'bg-[#1B3A6B] text-[#E8C468]'
-                      }`}
+                      className={`px-2 py-0.5 text-[10px] rounded-full font-bold ${isActive ? 'bg-[#0A1440] text-[#E8C468]' : 'bg-[#1B3A6B] text-[#E8C468]'
+                        }`}
                     >
                       {item.badge}
                     </span>

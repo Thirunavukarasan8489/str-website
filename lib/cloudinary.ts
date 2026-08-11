@@ -11,6 +11,48 @@ cloudinary.config({
 export default cloudinary;
 
 /**
+ * Extracts the Cloudinary public_id from a secure URL
+ */
+export function extractPublicId(imageUrl: string): string | null {
+  if (!imageUrl || !imageUrl.includes('cloudinary.com')) return null;
+  try {
+    const parts = imageUrl.split('/upload/');
+    if (parts.length < 2) return null;
+    const afterUpload = parts[1];
+    // Remove version prefix if present e.g. v1700000000/
+    const withoutVersion = afterUpload.replace(/^v\d+\//, '');
+    // Remove file extension e.g. .jpg, .png, .webp
+    const publicId = withoutVersion.substring(0, withoutVersion.lastIndexOf('.')) || withoutVersion;
+    return publicId;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Deletes an image from Cloudinary by URL or public_id
+ */
+export async function deleteCloudinaryImage(imageUrlOrPublicId: string): Promise<boolean> {
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  if (!apiKey || !apiSecret) return false;
+
+  try {
+    const publicId = imageUrlOrPublicId.includes('cloudinary.com')
+      ? extractPublicId(imageUrlOrPublicId)
+      : imageUrlOrPublicId;
+
+    if (!publicId) return false;
+
+    const result = await cloudinary.uploader.destroy(publicId);
+    return result.result === 'ok';
+  } catch (error) {
+    console.error('Error deleting image from Cloudinary:', error);
+    return false;
+  }
+}
+
+/**
  * Uploads a base64 string or buffer to Cloudinary
  */
 export async function uploadImageBuffer(
@@ -22,7 +64,9 @@ export async function uploadImageBuffer(
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
   if (!cloudName || !apiKey || !apiSecret) {
-    throw new Error('Cloudinary credentials are missing. Please configure CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in your .env file.');
+    throw new Error(
+      'Cloudinary credentials are missing. Please configure CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in your .env file.'
+    );
   }
 
   return new Promise((resolve, reject) => {

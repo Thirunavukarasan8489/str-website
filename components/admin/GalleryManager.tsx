@@ -61,14 +61,14 @@ interface GalleryItemData {
 interface CategoryStat {
   name: string;
   count: number;
-  isDefault: boolean;
+  isDefault?: boolean;
 }
 
 export default function GalleryManager() {
   const [subTab, setSubTab] = useState<'albums' | 'photos' | 'categories'>('albums');
   const [albums, setAlbums] = useState<GalleryAlbumData[]>([]);
   const [photos, setPhotos] = useState<GalleryItemData[]>([]);
-  const [categories, setCategories] = useState<string[]>(['All', 'Festivals', 'Culture', 'Youth', 'Community', 'Sports', 'Other']);
+  const [categories, setCategories] = useState<string[]>(['All']);
   const [categoryStats, setCategoryStats] = useState<CategoryStat[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -83,7 +83,7 @@ export default function GalleryManager() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [showMultiUploadModal, setShowMultiUploadModal] = useState(false);
   const [multiUploadTarget, setMultiUploadTarget] = useState<{ category: string; albumSlug: string }>({
-    category: 'Festivals',
+    category: '',
     albumSlug: '',
   });
 
@@ -96,7 +96,7 @@ export default function GalleryManager() {
   const [renameCatValue, setRenameCatValue] = useState('');
   const [deleteTargetCat, setDeleteTargetCat] = useState<CategoryStat | null>(null);
   const [deleteCatAction, setDeleteCatAction] = useState<'reassign' | 'delete_photos'>('reassign');
-  const [reassignToCat, setReassignToCat] = useState('Other');
+  const [reassignToCat, setReassignToCat] = useState('');
 
   // Multi-select bulk deletion
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<string[]>([]);
@@ -111,7 +111,7 @@ export default function GalleryManager() {
   const [albumForm, setAlbumForm] = useState<GalleryAlbumData>({
     title: '',
     slug: '',
-    category: 'Festivals',
+    category: '',
     description: '',
     coverImage: '',
     date: new Date().getFullYear().toString(),
@@ -119,7 +119,7 @@ export default function GalleryManager() {
 
   const [photoForm, setPhotoForm] = useState<GalleryItemData>({
     title: '',
-    category: 'Festivals',
+    category: '',
     albumSlug: '',
     imageUrl: '',
     alt: '',
@@ -135,10 +135,11 @@ export default function GalleryManager() {
   const fetchAllData = async () => {
     setLoading(true);
     try {
+      const timestamp = Date.now();
       const [albumsRes, photosRes, catsRes] = await Promise.all([
-        fetch('/api/admin/gallery/albums'),
-        fetch('/api/admin/gallery'),
-        fetch('/api/admin/gallery/categories'),
+        fetch(`/api/admin/gallery/albums?t=${timestamp}`, { cache: 'no-store' }),
+        fetch(`/api/admin/gallery?t=${timestamp}`, { cache: 'no-store' }),
+        fetch(`/api/admin/gallery/categories?t=${timestamp}`, { cache: 'no-store' }),
       ]);
 
       const albumsData = await albumsRes.json();
@@ -146,10 +147,21 @@ export default function GalleryManager() {
       const catsData = await catsRes.json();
 
       if (albumsRes.ok && albumsData.albums) setAlbums(albumsData.albums);
-      if (photosRes.ok && photosData.items) setPhotos(photosData.items);
+      if (photosRes.ok && photosData.items) {
+        const mappedPhotos = photosData.items.map((p: any) => ({
+          ...p,
+          id: p._id?.toString() || p.id,
+          _id: p._id?.toString() || p.id,
+          albumSlug: (p.albumSlug || '').trim(),
+        }));
+        setPhotos(mappedPhotos);
+      }
       if (catsRes.ok && catsData.categories) {
-        setCategories(Array.from(new Set(['All', ...catsData.categories])));
-        if (catsData.categoryStats) setCategoryStats(catsData.categoryStats);
+        const dynamicCats = catsData.categories.filter((c: string) => c && c !== 'All');
+        setCategories(['All', ...dynamicCats]);
+        if (catsData.categoryStats) {
+          setCategoryStats(catsData.categoryStats.filter((s: CategoryStat) => s.name && s.name !== 'All'));
+        }
       }
     } catch (err) {
       console.error('Failed to load gallery data', err);
@@ -164,22 +176,33 @@ export default function GalleryManager() {
   };
 
   // Helper to calculate photos per album
-  const getAlbumPhotoCount = (albSlug: string, albCategory?: string) => {
-    return photos.filter((p) => {
-      if (p.albumSlug && p.albumSlug === albSlug) return true;
-      if (!p.albumSlug && albCategory && p.category?.toLowerCase() === albCategory.toLowerCase()) return true;
-      return false;
-    }).length;
+  const getAlbumPhotoCount = (albSlug: string, _albCategory?: string) => {
+    return photos.filter((p) => p.albumSlug === albSlug).length;
   };
 
   // --- Multi Photo Batch Upload Handler ---
 
-  const handleOpenMultiUpload = (category = 'Festivals', albumSlug = '') => {
-    const targetCat = category !== 'All' ? category : 'Festivals';
-    const targetSlug = albumSlug || (albums.find((a) => a.category === targetCat)?.slug || albums[0]?.slug || '');
+  const handleOpenMultiUpload = (category?: string, albumSlug = '') => {
+    let targetSlug = albumSlug;
+    let targetCat = category && category !== 'All' ? category : '';
+
+    if (targetSlug) {
+      const matched = albums.find((a) => a.slug === targetSlug);
+      if (matched) {
+        targetCat = matched.category;
+      }
+    } else if (targetCat) {
+      const matched = albums.find((a) => (a.category || '').toLowerCase() === targetCat.toLowerCase());
+      if (matched) {
+        targetSlug = matched.slug;
+      }
+    } else if (albums.length > 0) {
+      targetSlug = albums[0].slug;
+      targetCat = albums[0].category;
+    }
 
     setMultiUploadTarget({
-      category: targetCat,
+      category: targetCat || categories.find((c) => c !== 'All') || 'General',
       albumSlug: targetSlug,
     });
     setShowMultiUploadModal(true);
@@ -189,10 +212,15 @@ export default function GalleryManager() {
 
   const handleOpenAddAlbum = () => {
     setEditingAlbum(null);
+    const defaultCat =
+      activeAlbumCategory !== 'All'
+        ? activeAlbumCategory
+        : categories.find((c) => c !== 'All') || 'General';
+
     setAlbumForm({
       title: '',
       slug: '',
-      category: activeAlbumCategory !== 'All' ? activeAlbumCategory : 'Festivals',
+      category: defaultCat,
       description: '',
       coverImage: '',
       date: new Date().getFullYear().toString(),
@@ -206,7 +234,7 @@ export default function GalleryManager() {
       id: alb._id || alb.id,
       title: alb.title,
       slug: alb.slug,
-      category: alb.category,
+      category: alb.category || 'General',
       description: alb.description || '',
       coverImage: alb.coverImage,
       date: alb.date,
@@ -252,9 +280,9 @@ export default function GalleryManager() {
     if (!albId) return;
 
     const deletePhotos = confirm(
-      `Delete album "${alb.title}"?\n\nClick OK to also delete all photos in this album, or Cancel if you wish to stop.`
+      `Delete album "${alb.title}"?\n\nClick OK to also delete all photos in this album (including Cloudinary storage), or Cancel to stop.`
     );
-    if (!deletePhotos && !confirm(`Do you want to delete ONLY the album and keep the photos in 'Other'?`)) {
+    if (!deletePhotos && !confirm(`Do you want to delete ONLY the album and keep the photos in database?`)) {
       return;
     }
 
@@ -280,10 +308,13 @@ export default function GalleryManager() {
     setEditingPhoto(null);
     const chosenSlug = targetAlbumSlug || (activeAlbumFilter !== 'All' ? activeAlbumFilter : albums[0]?.slug || '');
     const matchedAlbum = albums.find((a) => a.slug === chosenSlug);
+    const defaultCat =
+      matchedAlbum?.category ||
+      (activePhotoCategory !== 'All' ? activePhotoCategory : categories.find((c) => c !== 'All') || 'General');
 
     setPhotoForm({
       title: '',
-      category: matchedAlbum ? matchedAlbum.category : activePhotoCategory !== 'All' ? activePhotoCategory : 'Festivals',
+      category: defaultCat,
       albumSlug: chosenSlug,
       imageUrl: '',
       alt: '',
@@ -296,15 +327,20 @@ export default function GalleryManager() {
 
   const handleOpenEditPhoto = (photo: GalleryItemData) => {
     setEditingPhoto(photo);
+    const photoSlug = (photo.albumSlug || '').trim();
+    const matched = albums.find(
+      (a) => a.slug && photoSlug && a.slug.trim().toLowerCase() === photoSlug.toLowerCase()
+    );
+
     setPhotoForm({
-      id: photo._id || photo.id,
+      id: (photo._id || photo.id) as string,
       title: photo.title,
-      category: photo.category,
-      albumSlug: photo.albumSlug || '',
+      category: photo.category || matched?.category || 'General',
+      albumSlug: photoSlug,
       imageUrl: photo.imageUrl,
-      alt: photo.alt,
-      caption: photo.caption,
-      date: photo.date,
+      alt: photo.alt || photo.title,
+      caption: photo.caption || '',
+      date: photo.date || matched?.date || new Date().getFullYear().toString(),
       order: photo.order || 0,
     });
     setShowPhotoModal(true);
@@ -319,8 +355,10 @@ export default function GalleryManager() {
 
     setSaving(true);
     try {
-      const method = editingPhoto ? 'PUT' : 'POST';
-      const body = editingPhoto ? { ...photoForm, id: editingPhoto._id || editingPhoto.id } : photoForm;
+      const isEditing = Boolean(editingPhoto);
+      const method = isEditing ? 'PUT' : 'POST';
+      const targetId = editingPhoto ? (editingPhoto._id || editingPhoto.id) : undefined;
+      const body = isEditing ? { ...photoForm, id: targetId } : photoForm;
 
       const res = await fetch('/api/admin/gallery', {
         method,
@@ -330,9 +368,10 @@ export default function GalleryManager() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        showToast('success', editingPhoto ? 'Photo updated successfully!' : 'Photo added to album!');
+        showToast('success', isEditing ? 'Photo updated successfully!' : 'Photo added to album!');
         setShowPhotoModal(false);
-        fetchAllData();
+        setEditingPhoto(null);
+        await fetchAllData();
       } else {
         showToast('error', data.message || 'Failed to save photo.');
       }
@@ -345,7 +384,7 @@ export default function GalleryManager() {
 
   const handleDeleteSinglePhoto = async (id?: string) => {
     if (!id) return;
-    if (!confirm('Are you sure you want to delete this photo?')) return;
+    if (!confirm('Are you sure you want to delete this photo from database and Cloudinary?')) return;
 
     try {
       const res = await fetch(`/api/admin/gallery?id=${id}`, { method: 'DELETE' });
@@ -361,7 +400,7 @@ export default function GalleryManager() {
 
   const handleBulkDeletePhotos = async () => {
     if (selectedPhotoIds.length === 0) return;
-    if (!confirm(`Permanently delete ${selectedPhotoIds.length} selected photo(s)?`)) return;
+    if (!confirm(`Permanently delete ${selectedPhotoIds.length} selected photo(s) from database and Cloudinary?`)) return;
 
     try {
       const res = await fetch(`/api/admin/gallery?ids=${selectedPhotoIds.join(',')}`, { method: 'DELETE' });
@@ -393,8 +432,11 @@ export default function GalleryManager() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setCategories(Array.from(new Set(['All', ...data.categories])));
-        if (data.categoryStats) setCategoryStats(data.categoryStats);
+        const dynamicCats = (data.categories || []).filter((c: string) => c && c !== 'All');
+        setCategories(['All', ...dynamicCats]);
+        if (data.categoryStats) {
+          setCategoryStats(data.categoryStats.filter((s: CategoryStat) => s.name && s.name !== 'All'));
+        }
         setNewCatName('');
         showToast('success', `Category "${clean}" created successfully!`);
       }
@@ -421,8 +463,11 @@ export default function GalleryManager() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setCategories(Array.from(new Set(['All', ...data.categories])));
-        if (data.categoryStats) setCategoryStats(data.categoryStats);
+        const dynamicCats = (data.categories || []).filter((c: string) => c && c !== 'All');
+        setCategories(['All', ...dynamicCats]);
+        if (data.categoryStats) {
+          setCategoryStats(data.categoryStats.filter((s: CategoryStat) => s.name && s.name !== 'All'));
+        }
         setEditingCategoryName(null);
         showToast('success', data.message || `Renamed category to "${cleanNew}"`);
         fetchAllData();
@@ -448,8 +493,11 @@ export default function GalleryManager() {
       const res = await fetch(`/api/admin/gallery/categories?${params.toString()}`, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
-        setCategories(Array.from(new Set(['All', ...data.categories])));
-        if (data.categoryStats) setCategoryStats(data.categoryStats);
+        const dynamicCats = (data.categories || []).filter((c: string) => c && c !== 'All');
+        setCategories(['All', ...dynamicCats]);
+        if (data.categoryStats) {
+          setCategoryStats(data.categoryStats.filter((s: CategoryStat) => s.name && s.name !== 'All'));
+        }
         setDeleteTargetCat(null);
         showToast('success', data.message || `Category deleted.`);
         fetchAllData();
@@ -475,10 +523,7 @@ export default function GalleryManager() {
     // 1. Album matching
     let matchAlbum = true;
     if (activeAlbumFilter !== 'All') {
-      const selectedAlb = albums.find((a) => a.slug === activeAlbumFilter);
-      matchAlbum =
-        p.albumSlug === activeAlbumFilter ||
-        Boolean(!p.albumSlug && selectedAlb && (p.category || '').toLowerCase() === (selectedAlb.category || '').toLowerCase());
+      matchAlbum = p.albumSlug === activeAlbumFilter;
     }
 
     // 2. Category matching
@@ -508,14 +553,14 @@ export default function GalleryManager() {
             <ImageIcon className="w-5 h-5 text-[#E8C468]" />
           </h2>
           <p className="text-xs sm:text-sm text-slate-300 mt-1">
-            Create slug-based event albums, bulk-upload multiple photos to Festival or other categories via Cloudinary.
+            Create slug-based event albums, dynamic categories, and bulk-upload multiple photos via Cloudinary.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Quick Multi-Upload Button */}
           <button
-            onClick={() => handleOpenMultiUpload(activePhotoCategory !== 'All' ? activePhotoCategory : 'Festivals', activeAlbumFilter !== 'All' ? activeAlbumFilter : '')}
+            onClick={() => handleOpenMultiUpload(activePhotoCategory !== 'All' ? activePhotoCategory : undefined, activeAlbumFilter !== 'All' ? activeAlbumFilter : '')}
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-[#C9A227] to-[#E8C468] text-[#0A1440] shadow-lg hover:brightness-110 transition-all transform hover:scale-[1.02]"
           >
             <Zap className="w-4 h-4" />
@@ -650,7 +695,7 @@ export default function GalleryManager() {
               </p>
               <div className="flex justify-center gap-3 pt-2">
                 <button
-                  onClick={() => handleOpenMultiUpload('Festivals')}
+                  onClick={() => handleOpenMultiUpload()}
                   className="px-4 py-2 bg-[#C9A227] text-[#0A1440] font-bold text-xs rounded-lg"
                 >
                   Upload Multiple Photos
@@ -790,29 +835,31 @@ export default function GalleryManager() {
                 </div>
 
                 {/* Category filter dropdown */}
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-300 font-semibold flex items-center gap-1">
-                    <Filter className="w-3.5 h-3.5 text-[#E8C468]" />
-                    <span>Category:</span>
-                  </span>
-                  <select
-                    value={activePhotoCategory}
-                    onChange={(e) => setActivePhotoCategory(e.target.value)}
-                    className="px-3 py-2 rounded-xl bg-[#0A1440] border border-white/10 text-white text-xs font-semibold focus:outline-none focus:border-[#C9A227]"
-                  >
-                    {categories.map((cat) => {
-                      const count =
-                        cat === 'All'
-                          ? photos.length
-                          : photos.filter((p) => p.category?.toLowerCase() === cat.toLowerCase()).length;
-                      return (
-                        <option key={cat} value={cat}>
-                          {cat} ({count})
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
+                {categories.length > 1 && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-slate-300 font-semibold flex items-center gap-1">
+                      <Filter className="w-3.5 h-3.5 text-[#E8C468]" />
+                      <span>Category:</span>
+                    </span>
+                    <select
+                      value={activePhotoCategory}
+                      onChange={(e) => setActivePhotoCategory(e.target.value)}
+                      className="px-3 py-2 rounded-xl bg-[#0A1440] border border-white/10 text-white text-xs font-semibold focus:outline-none focus:border-[#C9A227]"
+                    >
+                      {categories.map((cat) => {
+                        const count =
+                          cat === 'All'
+                            ? photos.length
+                            : photos.filter((p) => (p.category || '').toLowerCase() === cat.toLowerCase()).length;
+                        return (
+                          <option key={cat} value={cat}>
+                            {cat} ({count})
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                )}
 
                 {(activeAlbumFilter !== 'All' || activePhotoCategory !== 'All' || searchQuery) && (
                   <button
@@ -909,7 +956,7 @@ export default function GalleryManager() {
               </p>
               <div className="flex justify-center gap-3 pt-2">
                 <button
-                  onClick={() => handleOpenMultiUpload(activePhotoCategory !== 'All' ? activePhotoCategory : 'Festivals', activeAlbumFilter !== 'All' ? activeAlbumFilter : '')}
+                  onClick={() => handleOpenMultiUpload(activePhotoCategory !== 'All' ? activePhotoCategory : undefined, activeAlbumFilter !== 'All' ? activeAlbumFilter : '')}
                   className="px-4 py-2 bg-[#C9A227] text-[#0A1440] font-bold text-xs rounded-lg flex items-center gap-1.5"
                 >
                   <Zap className="w-3.5 h-3.5" />
@@ -934,7 +981,10 @@ export default function GalleryManager() {
               {filteredPhotos.map((photo) => {
                 const photoId = (photo._id || photo.id) as string;
                 const isSelected = selectedPhotoIds.includes(photoId);
-                const matchedAlbum = albums.find((a) => a.slug === photo.albumSlug);
+                const photoSlug = (photo.albumSlug || '').trim();
+                const matchedAlbum = albums.find(
+                  (a) => a.slug && photoSlug && a.slug.trim().toLowerCase() === photoSlug.toLowerCase()
+                );
 
                 return (
                   <div
@@ -979,8 +1029,8 @@ export default function GalleryManager() {
                       <div className="p-4 space-y-1.5">
                         <div className="flex items-center justify-between text-xs text-slate-400">
                           <span>{photo.date}</span>
-                          <span className="text-[#E8C468] text-[10px] truncate max-w-[150px] font-mono" title={photo.albumSlug}>
-                            {matchedAlbum?.title || photo.albumSlug || 'Unassigned'}
+                          <span className="text-[#E8C468] text-[10px] truncate max-w-[150px] font-mono" title={photoSlug}>
+                            {matchedAlbum ? matchedAlbum.title : photoSlug ? photoSlug : 'Unassigned'}
                           </span>
                         </div>
                         <h3 className="text-sm font-serif font-bold text-white line-clamp-1">
@@ -1038,7 +1088,7 @@ export default function GalleryManager() {
                 type="text"
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
-                placeholder="e.g. Tamil New Year 2026, Highland Excursion..."
+                placeholder="e.g. Traditional Pongal, Highland Excursion, Folk Music..."
                 className="flex-1 px-4 py-2.5 rounded-xl bg-[#0A1440] border border-white/10 text-white text-xs placeholder-slate-400 focus:outline-none focus:border-[#C9A227]"
               />
               <button
@@ -1058,12 +1108,19 @@ export default function GalleryManager() {
               Category Registry ({categories.filter((c) => c !== 'All').length})
             </h3>
 
-            <div className="divide-y divide-white/10 border border-white/10 rounded-xl bg-[#0A1440]">
-              {categories
-                .filter((cat) => cat !== 'All')
-                .map((cat) => {
-                  const stat = categoryStats.find((s) => s.name === cat);
-                  const count = stat?.count || photos.filter((p) => p.category === cat).length;
+            {categoryStats.length === 0 ? (
+              <div className="text-center py-10 border border-dashed border-white/10 rounded-xl p-6 space-y-2 bg-[#0A1440]">
+                <Filter className="w-8 h-8 text-slate-500 mx-auto" />
+                <p className="text-xs text-slate-300 font-semibold">No custom categories found</p>
+                <p className="text-[11px] text-slate-400">
+                  Type a category name above and click &quot;+ Add Category&quot; to create your first dynamic category.
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-white/10 border border-white/10 rounded-xl bg-[#0A1440]">
+                {categoryStats.map((stat) => {
+                  const cat = stat.name;
+                  const count = stat.count;
                   const isEditing = editingCategoryName === cat;
 
                   return (
@@ -1116,12 +1173,9 @@ export default function GalleryManager() {
                             </button>
                             <button
                               onClick={() => {
-                                setDeleteTargetCat({
-                                  name: cat,
-                                  count,
-                                  isDefault: false,
-                                });
-                                setReassignToCat(categories.find((c) => c !== 'All' && c !== cat) || 'Other');
+                                setDeleteTargetCat(stat);
+                                const otherCat = categories.find((c) => c !== 'All' && c !== cat);
+                                setReassignToCat(otherCat || '');
                               }}
                               className="p-1.5 rounded-lg bg-[#8B1A2B]/30 hover:bg-[#8B1A2B] text-rose-300 hover:text-white text-xs transition-colors"
                               title="Delete category"
@@ -1134,7 +1188,8 @@ export default function GalleryManager() {
                     </div>
                   );
                 })}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Delete Category Confirmation Dialog */}
@@ -1150,28 +1205,30 @@ export default function GalleryManager() {
               </p>
 
               <div className="space-y-2 text-xs">
-                <label className="flex items-center gap-2 cursor-pointer text-slate-200">
-                  <input
-                    type="radio"
-                    name="deleteCategoryAction"
-                    checked={deleteCatAction === 'reassign'}
-                    onChange={() => setDeleteCatAction('reassign')}
-                  />
-                  <span>Reassign photos to:</span>
-                  <select
-                    value={reassignToCat}
-                    onChange={(e) => setReassignToCat(e.target.value)}
-                    className="px-2 py-1 rounded bg-[#0A1440] border border-white/20 text-white text-xs"
-                  >
-                    {categories
-                      .filter((c) => c !== 'All' && c !== deleteTargetCat.name)
-                      .map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                  </select>
-                </label>
+                {categories.filter((c) => c !== 'All' && c !== deleteTargetCat.name).length > 0 && (
+                  <label className="flex items-center gap-2 cursor-pointer text-slate-200">
+                    <input
+                      type="radio"
+                      name="deleteCategoryAction"
+                      checked={deleteCatAction === 'reassign'}
+                      onChange={() => setDeleteCatAction('reassign')}
+                    />
+                    <span>Reassign photos to:</span>
+                    <select
+                      value={reassignToCat}
+                      onChange={(e) => setReassignToCat(e.target.value)}
+                      className="px-2 py-1 rounded bg-[#0A1440] border border-white/20 text-white text-xs"
+                    >
+                      {categories
+                        .filter((c) => c !== 'All' && c !== deleteTargetCat.name)
+                        .map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                )}
 
                 <label className="flex items-center gap-2 cursor-pointer text-rose-300">
                   <input
@@ -1180,7 +1237,7 @@ export default function GalleryManager() {
                     checked={deleteCatAction === 'delete_photos'}
                     onChange={() => setDeleteCatAction('delete_photos')}
                   />
-                  <span>Delete category and ALL its {deleteTargetCat.count} photo(s)</span>
+                  <span>Delete category and ALL its {deleteTargetCat.count} photo(s) from Database & Cloudinary</span>
                 </label>
               </div>
 
@@ -1212,7 +1269,7 @@ export default function GalleryManager() {
         <MultiCloudinaryUploader
           albums={albums}
           categories={categories}
-          defaultCategory={multiUploadTarget.category || 'Festivals'}
+          defaultCategory={multiUploadTarget.category || undefined}
           defaultAlbumSlug={multiUploadTarget.albumSlug}
           onUploadComplete={() => {
             setShowMultiUploadModal(false);
@@ -1295,19 +1352,30 @@ export default function GalleryManager() {
                   <label className="block text-xs font-bold text-slate-200 uppercase tracking-wider mb-1">
                     Category *
                   </label>
-                  <select
-                    value={albumForm.category}
-                    onChange={(e) => setAlbumForm({ ...albumForm, category: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg bg-[#0A1440] border border-white/10 text-white text-xs focus:outline-none focus:border-[#C9A227]"
-                  >
-                    {categories
-                      .filter((c) => c !== 'All')
-                      .map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                  </select>
+                  {categories.filter((c) => c !== 'All').length > 0 ? (
+                    <select
+                      value={albumForm.category}
+                      onChange={(e) => setAlbumForm({ ...albumForm, category: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg bg-[#0A1440] border border-white/10 text-white text-xs focus:outline-none focus:border-[#C9A227]"
+                    >
+                      {categories
+                        .filter((c) => c !== 'All')
+                        .map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      required
+                      value={albumForm.category}
+                      onChange={(e) => setAlbumForm({ ...albumForm, category: e.target.value })}
+                      placeholder="e.g. Festivals, Culture, Gala..."
+                      className="w-full px-3 py-2 rounded-lg bg-[#0A1440] border border-white/10 text-white text-xs focus:outline-none focus:border-[#C9A227]"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -1431,19 +1499,30 @@ export default function GalleryManager() {
                   <label className="block text-xs font-bold text-slate-200 uppercase tracking-wider mb-1">
                     Category *
                   </label>
-                  <select
-                    value={photoForm.category}
-                    onChange={(e) => setPhotoForm({ ...photoForm, category: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg bg-[#0A1440] border border-white/10 text-white text-xs focus:outline-none focus:border-[#C9A227]"
-                  >
-                    {categories
-                      .filter((c) => c !== 'All')
-                      .map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                  </select>
+                  {categories.filter((c) => c !== 'All').length > 0 ? (
+                    <select
+                      value={photoForm.category}
+                      onChange={(e) => setPhotoForm({ ...photoForm, category: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg bg-[#0A1440] border border-white/10 text-white text-xs focus:outline-none focus:border-[#C9A227]"
+                    >
+                      {categories
+                        .filter((c) => c !== 'All')
+                        .map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      required
+                      value={photoForm.category}
+                      onChange={(e) => setPhotoForm({ ...photoForm, category: e.target.value })}
+                      placeholder="e.g. Festivals, Culture..."
+                      className="w-full px-3 py-2 rounded-lg bg-[#0A1440] border border-white/10 text-white text-xs focus:outline-none focus:border-[#C9A227]"
+                    />
+                  )}
                 </div>
               </div>
 

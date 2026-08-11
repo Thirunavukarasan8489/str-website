@@ -33,23 +33,28 @@ export default function GalleryAlbumGrid({
         {/* Category & Search Controls */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Category Filter Pills */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-slate-400 font-semibold mr-1 flex items-center gap-1">
-              <Filter className="w-3.5 h-3.5 text-[#C9A227]" /> Categories:
-            </span>
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 text-xs md:text-sm font-semibold rounded-full transition-all ${activeCategory === cat
-                    ? 'bg-gradient-to-r from-[#C9A227] to-[#E8C468] text-[#0A1440] font-bold shadow-md'
-                    : 'bg-[#121F54] text-slate-300 hover:text-white border border-white/10'
+          {categories.length > 1 ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-slate-400 font-semibold mr-1 flex items-center gap-1">
+                <Filter className="w-3.5 h-3.5 text-[#C9A227]" /> Categories:
+              </span>
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-4 py-2 text-xs md:text-sm font-semibold rounded-full transition-all ${
+                    activeCategory === cat
+                      ? 'bg-gradient-to-r from-[#C9A227] to-[#E8C468] text-[#0A1440] font-bold shadow-md'
+                      : 'bg-[#121F54] text-slate-300 hover:text-white border border-white/10'
                   }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div />
+          )}
 
           {/* Search Box */}
           <div className="relative min-w-[240px]">

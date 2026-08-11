@@ -15,25 +15,6 @@ function generateSlug(text: string): string {
 export async function GET() {
   try {
     await dbConnect();
-    const count = await NewsArticle.countDocuments();
-    if (count === 0) {
-      // Seed default news articles
-      for (const article of NEWS_DATA) {
-        await NewsArticle.create({
-          title: article.title,
-          slug: article.slug,
-          summary: article.summary,
-          content: article.content,
-          date: article.date,
-          author: article.author,
-          category: article.category,
-          image: article.image,
-          readTime: article.readTime,
-          isPublished: true,
-        });
-      }
-    }
-
     const articles = await NewsArticle.find().sort({ date: -1, createdAt: -1 });
     return NextResponse.json({ success: true, articles });
   } catch (error: any) {

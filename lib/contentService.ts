@@ -4,7 +4,7 @@ import GalleryItem from '@/models/GalleryItem';
 import GalleryAlbum from '@/models/GalleryAlbum';
 import GalleryCategory from '@/models/GalleryCategory';
 import NewsArticle from '@/models/NewsArticle';
-import { GALLERY_DATA, GALLERY_ALBUMS_DATA, NEWS_DATA } from '@/lib/data';
+import { NEWS_DATA } from '@/lib/data';
 import {
   GalleryItem as GalleryItemType,
   GalleryAlbum as GalleryAlbumType,
@@ -64,92 +64,41 @@ export async function getHeroData(): Promise<HeroData> {
 export async function getGalleryAlbums(): Promise<GalleryAlbumType[]> {
   try {
     await dbConnect();
-    const albumCount = await GalleryAlbum.countDocuments();
-
-    if (albumCount === 0) {
-      // Seed default albums
-      for (let i = 0; i < GALLERY_ALBUMS_DATA.length; i++) {
-        const alb = GALLERY_ALBUMS_DATA[i];
-        await GalleryAlbum.create({
-          title: alb.title,
-          slug: alb.slug,
-          category: alb.category,
-          description: alb.description,
-          coverImage: alb.coverImage,
-          date: alb.date,
-          order: i,
-          isPublished: true,
-        });
-      }
-    }
-
-    const itemCount = await GalleryItem.countDocuments();
-    if (itemCount === 0) {
-      for (let i = 0; i < GALLERY_DATA.length; i++) {
-        const item = GALLERY_DATA[i];
-        await GalleryItem.create({
-          title: item.title,
-          category: item.category,
-          albumSlug: item.albumSlug || '',
-          imageUrl: item.imageUrl,
-          alt: item.alt,
-          caption: item.caption,
-          date: item.date,
-          order: i,
-        });
-      }
-    }
-
     const [albums, photos] = await Promise.all([
       GalleryAlbum.find({ isPublished: true }).sort({ order: 1, createdAt: -1 }).lean(),
-      GalleryItem.find().sort({ order: 1, createdAt: -1 }).lean(),
+      GalleryItem.find().sort({ createdAt: -1, _id: -1 }).lean(),
     ]);
 
-    if (albums.length > 0) {
-      return albums.map((alb: any) => {
-        const albumPhotos = photos
-          .filter(
-            (p: any) =>
-              p.albumSlug === alb.slug ||
-              (!p.albumSlug && p.category?.toLowerCase() === alb.category?.toLowerCase())
-          )
-          .map((p: any) => ({
-            id: p._id.toString(),
-            title: p.title,
-            category: p.category,
-            albumSlug: p.albumSlug || alb.slug,
-            imageUrl: p.imageUrl,
-            alt: p.alt || p.title,
-            caption: p.caption || '',
-            date: p.date || '',
-          }));
+    return albums.map((alb: any) => {
+      const albumPhotos = photos
+        .filter((p: any) => p.albumSlug === alb.slug)
+        .map((p: any) => ({
+          id: p._id.toString(),
+          title: p.title,
+          category: p.category,
+          albumSlug: p.albumSlug,
+          imageUrl: p.imageUrl,
+          alt: p.alt || p.title,
+          caption: p.caption || '',
+          date: p.date || '',
+        }));
 
-        return {
-          id: alb._id.toString(),
-          slug: alb.slug,
-          title: alb.title,
-          category: alb.category,
-          coverImage: alb.coverImage,
-          description: alb.description || '',
-          date: alb.date || '',
-          photoCount: albumPhotos.length,
-          photos: albumPhotos,
-        };
-      });
-    }
+      return {
+        id: alb._id.toString(),
+        slug: alb.slug,
+        title: alb.title,
+        category: alb.category,
+        coverImage: alb.coverImage,
+        description: alb.description || '',
+        date: alb.date || '',
+        photoCount: albumPhotos.length,
+        photos: albumPhotos,
+      };
+    });
   } catch (error) {
     console.error('Error fetching Gallery Albums from DB:', error);
+    return [];
   }
-
-  // Fallback to static data
-  return GALLERY_ALBUMS_DATA.map((alb) => {
-    const albumPhotos = GALLERY_DATA.filter((p) => p.albumSlug === alb.slug);
-    return {
-      ...alb,
-      photoCount: albumPhotos.length,
-      photos: albumPhotos,
-    };
-  });
 }
 
 export async function getGalleryAlbumBySlug(slug: string): Promise<GalleryAlbumType | null> {
@@ -157,94 +106,72 @@ export async function getGalleryAlbumBySlug(slug: string): Promise<GalleryAlbumT
     await dbConnect();
     const album = await GalleryAlbum.findOne({ slug, isPublished: true }).lean();
 
-    if (album) {
-      const photos = await GalleryItem.find({
-        $or: [{ albumSlug: slug }, { category: album.category, albumSlug: { $in: ['', null] } }],
-      })
-        .sort({ order: 1, createdAt: -1 })
-        .lean();
-
-      const mappedPhotos = photos.map((p: any) => ({
-        id: p._id.toString(),
-        title: p.title,
-        category: p.category,
-        albumSlug: p.albumSlug || slug,
-        imageUrl: p.imageUrl,
-        alt: p.alt || p.title,
-        caption: p.caption || '',
-        date: p.date || '',
-      }));
-
-      return {
-        id: (album as any)._id.toString(),
-        slug: album.slug,
-        title: album.title,
-        category: album.category,
-        coverImage: album.coverImage,
-        description: album.description || '',
-        date: album.date || '',
-        photoCount: mappedPhotos.length,
-        photos: mappedPhotos,
-      };
+    if (!album) {
+      return null;
     }
+
+    const photos = await GalleryItem.find({ albumSlug: slug })
+      .sort({ createdAt: -1, _id: -1 })
+      .lean();
+
+    const mappedPhotos = photos.map((p: any) => ({
+      id: p._id.toString(),
+      title: p.title,
+      category: p.category,
+      albumSlug: p.albumSlug || slug,
+      imageUrl: p.imageUrl,
+      alt: p.alt || p.title,
+      caption: p.caption || '',
+      date: p.date || '',
+    }));
+
+    return {
+      id: (album as any)._id.toString(),
+      slug: album.slug,
+      title: album.title,
+      category: album.category,
+      coverImage: album.coverImage,
+      description: album.description || '',
+      date: album.date || '',
+      photoCount: mappedPhotos.length,
+      photos: mappedPhotos,
+    };
   } catch (error) {
     console.error('Error fetching Gallery Album by slug from DB:', error);
+    return null;
   }
-
-  const fallback = GALLERY_ALBUMS_DATA.find((a) => a.slug === slug);
-  if (fallback) {
-    const photos = GALLERY_DATA.filter((p) => p.albumSlug === slug);
-    return {
-      ...fallback,
-      photoCount: photos.length,
-      photos,
-    };
-  }
-
-  return null;
 }
 
-export async function getGalleryList(): Promise<GalleryItemType[]> {
+export async function getGalleryList(limit?: number): Promise<GalleryItemType[]> {
   try {
     await dbConnect();
-    const count = await GalleryItem.countDocuments();
-    if (count === 0) {
-      for (let i = 0; i < GALLERY_DATA.length; i++) {
-        const item = GALLERY_DATA[i];
-        await GalleryItem.create({
-          title: item.title,
-          category: item.category,
-          albumSlug: item.albumSlug || '',
-          imageUrl: item.imageUrl,
-          alt: item.alt,
-          caption: item.caption,
-          date: item.date,
-          order: i,
-        });
-      }
+    let query = GalleryItem.find().sort({ createdAt: -1, _id: -1 });
+    if (limit && limit > 0) {
+      query = query.limit(limit);
     }
+    const items = await query.lean();
 
-    const items = await GalleryItem.find().sort({ order: 1, createdAt: -1 }).lean();
-    if (items.length > 0) {
-      return items.map((item: any) => ({
-        id: item._id.toString(),
-        title: item.title,
-        category: item.category,
-        albumSlug: item.albumSlug || '',
-        imageUrl: item.imageUrl,
-        alt: item.alt || item.title,
-        caption: item.caption || '',
-        date: item.date || '',
-      }));
-    }
+    return items.map((item: any) => ({
+      id: item._id.toString(),
+      title: item.title,
+      category: item.category,
+      albumSlug: item.albumSlug || '',
+      imageUrl: item.imageUrl,
+      alt: item.alt || item.title,
+      caption: item.caption || '',
+      date: item.date || '',
+    }));
   } catch (error) {
     console.error('Error fetching Gallery items from DB:', error);
+    return [];
   }
-  return GALLERY_DATA;
+}
+
+export async function getLatestGalleryPhotos(limit = 6): Promise<GalleryItemType[]> {
+  return getGalleryList(limit);
 }
 
 export async function getGalleryCategories(): Promise<string[]> {
-  const DEFAULT_CATEGORIES = ['All', 'Culture', 'Festivals', 'Youth', 'Community', 'Sports'];
   try {
     await dbConnect();
     const [dbCategories, itemCategories, albumCategories] = await Promise.all([
@@ -254,58 +181,38 @@ export async function getGalleryCategories(): Promise<string[]> {
     ]);
 
     const set = new Set<string>();
-    DEFAULT_CATEGORIES.forEach((c) => set.add(c));
-    dbCategories.forEach((c: any) => set.add(c.name));
-    itemCategories.forEach((c: string) => c && set.add(c));
-    albumCategories.forEach((c: string) => c && set.add(c));
+    set.add('All');
+    dbCategories.forEach((c: any) => c.name && set.add(c.name.trim()));
+    itemCategories.forEach((c: string) => c && set.add(c.trim()));
+    albumCategories.forEach((c: string) => c && set.add(c.trim()));
 
     return Array.from(set);
   } catch (error) {
     console.error('Error fetching gallery categories:', error);
-    return DEFAULT_CATEGORIES;
+    return ['All'];
   }
 }
 
 export async function getNewsList(): Promise<NewsArticleType[]> {
   try {
     await dbConnect();
-    const count = await NewsArticle.countDocuments();
-    if (count === 0) {
-      for (const article of NEWS_DATA) {
-        await NewsArticle.create({
-          title: article.title,
-          slug: article.slug,
-          summary: article.summary,
-          content: article.content,
-          date: article.date,
-          author: article.author,
-          category: article.category,
-          image: article.image,
-          readTime: article.readTime,
-          isPublished: true,
-        });
-      }
-    }
-
     const articles = await NewsArticle.find({ isPublished: true }).sort({ date: -1, createdAt: -1 }).lean();
-    if (articles.length > 0) {
-      return articles.map((a: any) => ({
-        id: a._id.toString(),
-        slug: a.slug,
-        title: a.title,
-        summary: a.summary,
-        content: a.content,
-        date: a.date,
-        author: a.author,
-        category: a.category,
-        image: a.image,
-        readTime: a.readTime,
-      }));
-    }
+    return articles.map((a: any) => ({
+      id: a._id.toString(),
+      slug: a.slug,
+      title: a.title,
+      summary: a.summary,
+      content: a.content,
+      date: a.date,
+      author: a.author,
+      category: a.category,
+      image: a.image,
+      readTime: a.readTime,
+    }));
   } catch (error) {
     console.error('Error fetching News articles from DB:', error);
+    return [];
   }
-  return NEWS_DATA;
 }
 
 export async function getNewsArticleBySlug(slug: string): Promise<NewsArticleType | null> {
@@ -329,7 +236,5 @@ export async function getNewsArticleBySlug(slug: string): Promise<NewsArticleTyp
   } catch (error) {
     console.error('Error fetching News article by slug from DB:', error);
   }
-
-  const fallback = NEWS_DATA.find((a) => a.slug === slug);
-  return fallback || null;
+  return null;
 }

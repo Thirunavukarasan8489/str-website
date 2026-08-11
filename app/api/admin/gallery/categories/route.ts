@@ -2,49 +2,47 @@ import { NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/db';
 import GalleryCategory from '@/models/GalleryCategory';
 import GalleryItem from '@/models/GalleryItem';
-
-const DEFAULT_CATEGORIES = ['Festivals', 'Culture', 'Youth', 'Community', 'Sports', 'Other'];
+import GalleryAlbum from '@/models/GalleryAlbum';
+import { deleteCloudinaryImage } from '@/lib/cloudinary';
 
 async function getCategoryListAndStats() {
-  const [dbCategories, items] = await Promise.all([
+  const [dbCategories, items, albumCategories] = await Promise.all([
     GalleryCategory.find().sort({ order: 1, createdAt: 1 }).lean(),
-    GalleryItem.find({}, 'category').lean(),
+    GalleryItem.find({}, 'category imageUrl').lean(),
+    GalleryAlbum.distinct('category'),
   ]);
 
   const set = new Set<string>();
-  DEFAULT_CATEGORIES.forEach((c) => set.add(c));
-  dbCategories.forEach((c: any) => set.add(c.name));
-  items.forEach((item: any) => item.category && set.add(item.category));
+  dbCategories.forEach((c: any) => c.name && set.add(c.name.trim()));
+  items.forEach((item: any) => item.category && set.add(item.category.trim()));
+  albumCategories.forEach((cat: string) => cat && set.add(cat.trim()));
 
-  const allCategories = Array.from(set);
+  const allCategories = Array.from(set).filter(Boolean);
 
-  // Calculate counts per category
+  // Calculate photo counts per category
   const countMap: Record<string, number> = {};
   items.forEach((item: any) => {
-    const cat = item.category || 'Other';
-    countMap[cat] = (countMap[cat] || 0) + 1;
+    const cat = (item.category || '').trim();
+    if (cat) {
+      countMap[cat] = (countMap[cat] || 0) + 1;
+    }
   });
 
   const categoryStats = allCategories.map((name) => ({
     name,
     count: countMap[name] || 0,
-    isDefault: DEFAULT_CATEGORIES.includes(name),
+    isDefault: false,
   }));
 
   return { allCategories, categoryStats, totalPhotos: items.length };
 }
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     await dbConnect();
-
-    const count = await GalleryCategory.countDocuments();
-    if (count === 0) {
-      for (let i = 0; i < DEFAULT_CATEGORIES.length; i++) {
-        await GalleryCategory.create({ name: DEFAULT_CATEGORIES[i], order: i });
-      }
-    }
-
     const { allCategories, categoryStats, totalPhotos } = await getCategoryListAndStats();
 
     return NextResponse.json({
@@ -109,18 +107,14 @@ export async function PUT(request: Request) {
 
     if (!cleanOld || !cleanNew) {
       return NextResponse.json(
-        { success: false, message: 'Both old and new category names are required' },
+        { success: false, message: 'Old and new category names are required' },
         { status: 400 }
       );
     }
 
-    if (cleanOld === cleanNew) {
-      return NextResponse.json({ success: true, message: 'No changes made' });
-    }
-
     await dbConnect();
 
-    // Update in GalleryCategory
+    // Update in category registry
     await GalleryCategory.findOneAndUpdate(
       { name: cleanOld },
       { name: cleanNew },
@@ -128,16 +122,16 @@ export async function PUT(request: Request) {
     );
 
     // Update all photos currently using the old category name
-    const updateResult = await GalleryItem.updateMany(
-      { category: cleanOld },
-      { $set: { category: cleanNew } }
-    );
+    const [itemUpdate, albumUpdate] = await Promise.all([
+      GalleryItem.updateMany({ category: cleanOld }, { $set: { category: cleanNew } }),
+      GalleryAlbum.updateMany({ category: cleanOld }, { $set: { category: cleanNew } }),
+    ]);
 
     const { allCategories, categoryStats } = await getCategoryListAndStats();
 
     return NextResponse.json({
       success: true,
-      message: `Renamed category to "${cleanNew}" and updated ${updateResult.modifiedCount} photo(s)`,
+      message: `Renamed category to "${cleanNew}"`,
       categories: allCategories,
       categoryStats,
     });
@@ -153,9 +147,9 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const name = searchParams.get('name');
+    const name = searchParams.get('name')?.trim();
     const deletePhotos = searchParams.get('deletePhotos') === 'true';
-    const targetCategory = searchParams.get('targetCategory') || 'Other';
+    const targetCategory = searchParams.get('targetCategory')?.trim() || '';
 
     if (!name) {
       return NextResponse.json(
@@ -167,19 +161,33 @@ export async function DELETE(request: Request) {
     await dbConnect();
 
     // Remove from category registry
-    await GalleryCategory.findOneAndDelete({ name });
+    await GalleryCategory.deleteMany({ name });
 
     let actionSummary = '';
     if (deletePhotos) {
+      const photosToDelete = await GalleryItem.find({ category: name });
+      for (const p of photosToDelete) {
+        if (p.imageUrl) {
+          await deleteCloudinaryImage(p.imageUrl);
+        }
+      }
       const delResult = await GalleryItem.deleteMany({ category: name });
-      actionSummary = `Deleted category "${name}" and removed ${delResult.deletedCount} associated photo(s)`;
+      actionSummary = `Deleted category "${name}" and removed ${delResult.deletedCount} photo(s) from database and Cloudinary.`;
     } else {
-      // Reassign to target category (e.g. 'Other')
-      const reassignResult = await GalleryItem.updateMany(
-        { category: name },
-        { $set: { category: targetCategory } }
-      );
-      actionSummary = `Deleted category "${name}" and moved ${reassignResult.modifiedCount} photo(s) to "${targetCategory}"`;
+      if (targetCategory) {
+        await Promise.all([
+          GalleryItem.updateMany({ category: name }, { $set: { category: targetCategory } }),
+          GalleryAlbum.updateMany({ category: name }, { $set: { category: targetCategory } }),
+        ]);
+        actionSummary = `Deleted category "${name}" and reassigned items to "${targetCategory}".`;
+      } else {
+        // Just remove category from items
+        await Promise.all([
+          GalleryItem.updateMany({ category: name }, { $set: { category: 'General' } }),
+          GalleryAlbum.updateMany({ category: name }, { $set: { category: 'General' } }),
+        ]);
+        actionSummary = `Deleted category "${name}".`;
+      }
     }
 
     const { allCategories, categoryStats } = await getCategoryListAndStats();
