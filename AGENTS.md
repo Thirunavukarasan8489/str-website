@@ -64,7 +64,9 @@ scotland-tamils-raise/
 │   │   └── [slug]/
 │   │       └── page.tsx            # Single event detail (SSG/ISR)
 │   ├── gallery/
-│   │   └── page.tsx
+│   │   ├── page.tsx
+│   │   └── [slug]/
+│   │       └── page.tsx            # Single album gallery (SSG/ISR)
 │   ├── membership/
 │   │   ├── page.tsx
 │   │   └── join/
@@ -78,6 +80,15 @@ scotland-tamils-raise/
 │   ├── donate/
 │   │   └── page.tsx
 │   └── api/
+│       ├── admin/
+│       │   ├── auth/route.ts
+│       │   ├── gallery/route.ts
+│       │   ├── gallery/albums/route.ts
+│       │   ├── gallery/categories/route.ts
+│       │   ├── hero/route.ts
+│       │   ├── news/route.ts
+│       │   ├── leads/route.ts
+│       │   └── upload/route.ts
 │       ├── events/route.ts
 │       ├── membership/route.ts
 │       ├── contact/route.ts
@@ -89,6 +100,19 @@ scotland-tamils-raise/
 │   │   ├── Navbar.tsx
 │   │   ├── Footer.tsx
 │   │   └── MobileMenu.tsx
+│   ├── admin/
+│   │   ├── AdminSidebar.tsx
+│   │   ├── AdminOverview.tsx
+│   │   ├── HeroManager.tsx
+│   │   ├── GalleryManager.tsx
+│   │   ├── NewsManager.tsx
+│   │   ├── LeadsManager.tsx
+│   │   ├── CloudinaryUploader.tsx
+│   │   ├── MultiCloudinaryUploader.tsx
+│   │   └── AdminLoginModal.tsx
+│   ├── gallery/
+│   │   ├── GalleryAlbumGrid.tsx
+│   │   └── SingleAlbumGalleryView.tsx
 │   ├── sections/
 │   │   ├── Hero.tsx
 │   │   ├── EventsCarousel.tsx
@@ -109,19 +133,28 @@ scotland-tamils-raise/
 │       └── SEOSchema.tsx           # JSON-LD injector component
 │
 ├── lib/
-│   ├── db.ts                       # DB connection (if MongoDB)
+│   ├── db.ts                       # MongoDB Atlas connection
+│   ├── cloudinary.ts               # Cloudinary upload, destroy & CDN helpers
+│   ├── contentService.ts           # Dynamic MongoDB content fetcher & SSR layer
 │   ├── utils.ts
-│   ├── seo.ts                      # metadata generator helpers
+│   ├── seo.ts                      # Metadata generator helpers
 │   └── validators/                 # Zod schemas
 │
-├── content/                        # If using MDX/static content instead of CMS
-│   ├── events/
-│   └── news/
+├── models/
+│   ├── HeroContent.ts
+│   ├── GalleryAlbum.ts
+│   ├── GalleryItem.ts
+│   ├── GalleryCategory.ts
+│   ├── NewsArticle.ts
+│   ├── Member.ts
+│   ├── ContactMessage.ts
+│   └── Subscriber.ts
 │
 ├── public/
 │   ├── images/
 │   ├── logo.png
-│   └── favicon files (all sizes)
+│   ├── llms.txt
+│   └── favicon files
 │
 ├── types/
 │   └── index.ts
@@ -192,8 +225,8 @@ scotland-tamils-raise/
 3. [x] Build shared layout (Navbar, Footer, MobileMenu) first — every page depends on it.
 4. [x] Build Home page fully, then About, Events, Gallery, Membership, News, Contact, Donate, Privacy, Terms — all pages operational.
 5. [x] Add metadata, JSON-LD schemas, sitemap (`sitemap.ts`), and robots (`robots.ts`) across all pages.
-6. [x] Build validation with strict TypeScript compilation (28/28 routes SSG/ISR verified).
-7. [x] Pull all event/gallery/news/membership data from `lib/data.ts` and dynamic API routes with MongoDB backend support.
+6. [x] Build validation with strict TypeScript compilation (SSG/ISR verified).
+7. [x] Pull all event/gallery/news/membership data from dynamic API routes with MongoDB Atlas & Cloudinary support.
 
 ---
 
@@ -204,11 +237,11 @@ scotland-tamils-raise/
 | Route | Type | Description | Schema / SEO | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | `/admin` | Static (○) | No-code Admin Control Center: Hero Editor, Gallery CMS, News CMS, Leads Tracker | Authenticated Admin | **Completed** |
-| `/` | Static/ISR (○) | Homepage: Dynamic Hero, AboutPreview, EventsCarousel, GalleryPreview, MembershipTiers, Newsletter | `Organization` JSON-LD | **Completed** |
+| `/` | Static/ISR (○) | Homepage: Dynamic Hero, AboutPreview, EventsCarousel, Live Album Cards Gallery (up to 6 cards), MembershipTiers, Newsletter | `Organization` JSON-LD | **Completed** |
 | `/about` | Static (○) | About Us: History, constitutional 5 pillars, milestones timeline, community advocacy | `BreadcrumbList`, `Organization` | **Completed** |
 | `/events` | Static (○) | Events Calendar: Upcoming (2026) and past event archives with filtering | `BreadcrumbList` | **Completed** |
 | `/events/[slug]` | SSG/ISR (●) | Dynamic event details: Agendas, ticket links, schedule breakdown, ISR revalidate (1 hr) | `Event`, `BreadcrumbList` | **Completed** |
-| `/gallery` | Static/ISR (○) | Gallery Collections Overview: Album cards with covers, category pills & photo counts | `BreadcrumbList` | **Completed** |
+| `/gallery` | Static/ISR (○) | Gallery Collections Overview: Album cards with covers, dynamic category pills & photo counts | `BreadcrumbList` | **Completed** |
 | `/gallery/[slug]` | SSG/ISR (●) | Single Album Gallery: High-res photo grid with Lightbox modal, related albums | `BreadcrumbList` | **Completed** |
 | `/membership` | Static (○) | Membership tier overview (Individual, Family, Student, Lifetime Patron) & FAQs | `FAQPage`, `BreadcrumbList` | **Completed** |
 | `/membership/join` | Static (○) | Interactive registration form with Zod + React Hook Form + `/api/membership` | `BreadcrumbList` | **Completed** |
@@ -221,61 +254,57 @@ scotland-tamils-raise/
 
 ---
 
-### ✅ 2. Admin Control Suite & Components Library
+### ✅ 2. Admin Control Suite & Dynamic CMS Enhancements
 
 - **Admin Dashboard (`components/admin/`, `app/admin/`):**
   - [page.tsx](file:///f:/Thiru/frontend/Personal/str-website/app/admin/page.tsx): Main admin layout with tab switching, mobile drawer navigation, and session guard.
   - [AdminSidebar.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/AdminSidebar.tsx): Responsive navigation bar with live lead/article counts.
   - [AdminOverview.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/AdminOverview.tsx): Dashboard metrics summary and quick action cards.
   - [HeroManager.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/HeroManager.tsx): Live editor for hero copy, metrics, CTA buttons, and celebration photo with live preview.
-  - [GalleryManager.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/GalleryManager.tsx): Complete Album & Photo management suite: create slug albums, upload photos to albums, batch delete, and category CRUD.
-  - [NewsManager.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/NewsManager.tsx): Full news publication suite with Published/Draft status toggles, cover photo uploads, custom slugs, and summary fields.
-  - [LeadsManager.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/LeadsManager.tsx): Searchable, filterable table for Membership applications, Contact inquiries, and Newsletter subscribers with CSV export.
-  - [CloudinaryUploader.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/CloudinaryUploader.tsx): Drag-and-drop uploader with progress indicator and image URL fallback.
-  - [MultiCloudinaryUploader.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/MultiCloudinaryUploader.tsx): Multi-photo batch selector & uploader to Cloudinary with thumbnail queue and progress tracking.
-  - [AdminLoginModal.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/AdminLoginModal.tsx): Password authentication modal with session cookies.
-
-- **Layout & Public Gallery (`components/layout/`, `components/gallery/`):**
-  - [Navbar.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/layout/Navbar.tsx), [Footer.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/layout/Footer.tsx), [SiteLayoutWrapper.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/layout/SiteLayoutWrapper.tsx).
-  - [GalleryAlbumGrid.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/gallery/GalleryAlbumGrid.tsx): Album collections grid with category pills, cover hover effects, and slug navigation.
-  - [SingleAlbumGalleryView.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/gallery/SingleAlbumGalleryView.tsx): High-res photo masonry with interactive Lightbox zoom.
-
----
-
-### ✅ 3. Data Architecture, Backend & API Endpoints
-
-- **Data Layer (`lib/data.ts`, `lib/contentService.ts`):**
-  - `getHeroData()`, `getGalleryAlbums()`, `getGalleryAlbumBySlug(slug)`, `getGalleryList()`, `getNewsList()`, `getNewsArticleBySlug()` with MongoDB queries and automatic fallback seeding.
-- **Database Models (`lib/db.ts`, `models/`):**
-  - `HeroContent.ts`, `GalleryAlbum.ts`, `GalleryItem.ts`, `GalleryCategory.ts`, `NewsArticle.ts`, `Member.ts`, `ContactMessage.ts`, `Subscriber.ts`.
-- **API Endpoints (`app/api/`):**
-  - `GET/POST/PUT/DELETE /api/admin/gallery/albums` — Album & Collection management with slug synchronization.
-  - `GET/POST/PUT/DELETE /api/admin/gallery` — Photo management with album assignment and bulk deletion.
-  - `GET/POST/PUT/DELETE /api/admin/gallery/categories` — Full Category CRUD with photo count tracking and safe reassignment.
-  - `GET/PUT /api/admin/hero` — Live Hero content & photo management.
-  - `GET/POST/PUT/DELETE /api/admin/news` — Full news article publishing with Published/Draft status.
-  - `GET/DELETE /api/admin/leads` — Lead queries, statistics, and CSV export.
-  - `POST /api/admin/upload` — Direct Cloudinary photo upload stream.
-  - `GET/POST /api/admin/auth` — Secure session validation and sign-out.
+  - [GalleryManager.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/GalleryManager.tsx): Complete Album & Photo management suite:
+    - **100% Dynamic Categories**: Removed all hardcoded static categories; categories are strictly created/edited/deleted from MongoDB.
+    - **Strict Photo Isolation**: Photos are bound strictly to their `albumSlug`, eliminating cross-album leakage under shared categories (e.g. *Koothu Dance* vs *Traditional Tamil Folk Arts*).
+    - **Real-Time Data Hydration**: Added `{ cache: 'no-store' }` and cache-busting timestamps (`?t=${Date.now()}`) to ensure immediate UI updates.
+    - **Single Photo Editor**: Cleaned `PUT /api/admin/gallery` update payload so reassigning photos to albums in the "All Photos" tab immediately persists in MongoDB.
+  - [MultiCloudinaryUploader.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/MultiCloudinaryUploader.tsx):
+    - Multi-photo batch selector and direct Cloudinary CDN uploader.
+    - **Automatic Album ↔ Category Synchronization**: Selecting an album automatically syncs category and event date/year.
+    - Mandatory album binding ensuring photos are never saved as unassigned.
+  - [CloudinaryUploader.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/CloudinaryUploader.tsx): Single drag-and-drop uploader with progress tracking.
+  - [NewsManager.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/NewsManager.tsx): News publication suite with Published/Draft status toggles and custom slugs.
+  - [LeadsManager.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/LeadsManager.tsx): Lead queries, statistics, and CSV export.
 
 ---
 
-### ✅ 4. SEO, AI-Search (AEO/GEO) & Discoverability
+### ✅ 3. Cloudinary CDN & Automatic Storage Cleanup
 
-- [sitemap.ts](file:///f:/Thiru/frontend/Personal/str-website/app/sitemap.ts): Dynamic sitemap indexing static pages, event routes, news routes, and dynamic gallery album slug routes.
-- [robots.ts](file:///f:/Thiru/frontend/Personal/str-website/app/robots.ts): Configured crawler permissions and sitemap link.
-- [manifest.ts](file:///f:/Thiru/frontend/Personal/str-website/app/manifest.ts): PWA manifest with Scottish Tamil branding colors.
-- [llms.txt](file:///f:/Thiru/frontend/Personal/str-website/public/llms.txt): Plain-language summary of Scotland Tamils Raise for AI search crawlers.
-- JSON-LD Structured Data: Configured for `Organization`, `Event`, `FAQPage`, and `BreadcrumbList`.
+- **Asset Lifecycle Management ([lib/cloudinary.ts](file:///f:/Thiru/frontend/Personal/str-website/lib/cloudinary.ts)):**
+  - Added `extractPublicId(imageUrl)` to parse Cloudinary asset IDs from secure URLs.
+  - Added `deleteCloudinaryImage(imageUrlOrPublicId)` helper calling `cloudinary.uploader.destroy()`.
+  - **Album Deletion Cleanup**: Deleting an album automatically destroys all its photos and cover photo in Cloudinary CDN.
+  - **Single & Bulk Photo Cleanup**: Deleting photos via single delete or batch delete immediately destroys the image files from Cloudinary storage.
+
+---
+
+### ✅ 4. Data Layer & Real-Time API Endpoints
+
+- **Permanent Deletion & Zero Auto-Reseeding ([lib/contentService.ts](file:///f:/Thiru/frontend/Personal/str-website/lib/contentService.ts), [app/api/admin/](file:///f:/Thiru/frontend/Personal/str-website/app/api/admin/)):**
+  - Removed all `if (count === 0)` auto-insertion blocks across Gallery Photos, Albums, and News APIs.
+  - Deleting all photos or albums leaves the database clean without resurrecting static mock data.
+- **Force-Dynamic Route Handlers**:
+  - Added `export const dynamic = 'force-dynamic'` and `export const revalidate = 0` to all `/api/admin/*` endpoints to eliminate stale browser/Next.js cache.
+- **Homepage Gallery Preview ([components/sections/GalleryPreview.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/sections/GalleryPreview.tsx)):**
+  - Dynamic album collection cards matching the `/gallery` page reference.
+  - Displays up to 6 latest album cards queried via `getGalleryAlbums()`.
 
 ---
 
 ### ✅ 5. Build Verification Results
 
 - **Command:** `npm run build`
-- **Output:** Clean build with 0 errors across 42 routes:
+- **Output:** Clean build with 0 errors across all routes:
   - 14 Static prerendered pages (including `/admin`)
-  - 12 SSG/ISR dynamic routes with hourly and minute revalidations
+  - Dynamic SSG/ISR routes with hourly and minute revalidation
   - 12 Dynamic API route handlers
   - 4 System metadata endpoints (`sitemap.xml`, `robots.txt`, `manifest.webmanifest`, `favicon.ico`)
 - **TypeScript:** Strict type checking passed with 0 errors.
