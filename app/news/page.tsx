@@ -4,7 +4,9 @@ import NewsCard from '@/components/cards/NewsCard';
 import SectionHeading from '@/components/shared/SectionHeading';
 import SEOSchema from '@/components/shared/SEOSchema';
 import { getBreadcrumbSchema } from '@/lib/seo';
-import { NEWS_DATA } from '@/lib/data';
+import { getNewsList } from '@/lib/contentService';
+
+export const revalidate = 60; // Refresh news articles from DB every 60 seconds
 
 export const metadata: Metadata = {
   title: 'News & Announcements | Scotland Tamils Raise',
@@ -12,7 +14,9 @@ export const metadata: Metadata = {
     'Read the latest press releases, Scottish Parliament motions, Tamil Academy announcements, and community stories.',
 };
 
-export default function NewsPage() {
+export default async function NewsPage() {
+  const articles = await getNewsList();
+
   const breadcrumbs = getBreadcrumbSchema([
     { name: 'Home', item: '/' },
     { name: 'News', item: '/news' },
@@ -39,11 +43,17 @@ export default function NewsPage() {
 
       <section className="py-16 bg-[#0A1440]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {NEWS_DATA.map((article) => (
-              <NewsCard key={article.id} article={article} />
-            ))}
-          </div>
+          {articles.length === 0 ? (
+            <div className="text-center py-16 text-slate-400">
+              No news articles published at this time.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {articles.map((article) => (
+                <NewsCard key={article.id || article.slug} article={article} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </>

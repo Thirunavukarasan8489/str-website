@@ -5,11 +5,16 @@ import EventsCarousel from '@/components/sections/EventsCarousel';
 import GalleryPreview from '@/components/sections/GalleryPreview';
 import MembershipTiers from '@/components/sections/MembershipTiers';
 import NewsletterSignup from '@/components/sections/NewsletterSignup';
+import { getHeroData } from '@/lib/contentService';
 
-export default function Home() {
+export const revalidate = 60; // Refresh live homepage content every 60 seconds
+
+export default async function Home() {
+  const heroData = await getHeroData();
+
   return (
     <div className="flex flex-col min-h-screen">
-      <Hero />
+      <Hero data={heroData} />
       <AboutPreview />
       <EventsCarousel />
       <GalleryPreview />

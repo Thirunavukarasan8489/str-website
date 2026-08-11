@@ -3,27 +3,28 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Calendar, Clock, ArrowLeft, User, Share2 } from 'lucide-react';
+import { Calendar, Clock, ArrowLeft, User } from 'lucide-react';
 import SEOSchema from '@/components/shared/SEOSchema';
 import { getBreadcrumbSchema } from '@/lib/seo';
-import { NEWS_DATA } from '@/lib/data';
+import { getNewsList, getNewsArticleBySlug } from '@/lib/contentService';
 import { formatDate } from '@/lib/utils';
 
-export const revalidate = 3600;
+export const revalidate = 60; // ISR revalidate every 60 seconds
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  return NEWS_DATA.map((article) => ({
+  const articles = await getNewsList();
+  return articles.map((article) => ({
     slug: article.slug,
   }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const article = NEWS_DATA.find((a) => a.slug === slug);
+  const article = await getNewsArticleBySlug(slug);
   if (!article) return { title: 'Article Not Found' };
 
   return {
@@ -39,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SingleNewsPage({ params }: Props) {
   const { slug } = await params;
-  const article = NEWS_DATA.find((a) => a.slug === slug);
+  const article = await getNewsArticleBySlug(slug);
 
   if (!article) {
     notFound();
@@ -111,7 +112,7 @@ export default async function SingleNewsPage({ params }: Props) {
             <p className="font-semibold text-white text-xl leading-snug border-l-4 border-[#C9A227] pl-4 py-1">
               {article.summary}
             </p>
-            <p>{article.content}</p>
+            <div className="whitespace-pre-wrap leading-relaxed">{article.content}</div>
             <p>
               Scotland Tamils Raise continues to work closely with local government representatives, Scottish cultural heritage trusts, and educational bodies to ensure Tamil traditions remain a vibrant part of Scotland’s multicultural landscape.
             </p>

@@ -10,7 +10,7 @@ export interface EventItem {
   location: string;
   city: string; // Edinburgh, Glasgow, Aberdeen, etc.
   venue: string;
-  category: 'Festival' | 'Cultural' | 'Youth' | 'Community' | 'Workshop';
+  category: 'Festival' | 'Cultural' | 'Youth' | 'Community' | 'Workshop' | string;
   image: string;
   isFeatured?: boolean;
   isPast?: boolean;
@@ -28,7 +28,7 @@ export interface NewsArticle {
   content: string;
   date: string;
   author: string;
-  category: 'Press Release' | 'Community Story' | 'Culture' | 'Announcement';
+  category: 'Press Release' | 'Community Story' | 'Culture' | 'Announcement' | string;
   image: string;
   readTime: string;
 }
@@ -36,11 +36,42 @@ export interface NewsArticle {
 export interface GalleryItem {
   id: string;
   title: string;
-  category: 'Culture' | 'Festivals' | 'Youth' | 'Community' | 'Sports';
+  category: 'Culture' | 'Festivals' | 'Youth' | 'Community' | 'Sports' | string;
+  albumSlug?: string;
   imageUrl: string;
   alt: string;
   caption: string;
   date: string;
+}
+
+export interface GalleryAlbum {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  coverImage: string;
+  description: string;
+  date: string;
+  photoCount?: number;
+  photos?: GalleryItem[];
+}
+
+export interface HeroData {
+  badge: string;
+  title: string;
+  highlightTitle: string;
+  subtitle: string;
+  primaryCtaText: string;
+  primaryCtaLink: string;
+  secondaryCtaText: string;
+  secondaryCtaLink: string;
+  familiesCount: string;
+  yearsCount: string;
+  cardBadge: string;
+  cardTitle: string;
+  cardSubtitle: string;
+  imageUrl: string;
+  imageAlt: string;
 }
 
 export interface CommitteeMember {

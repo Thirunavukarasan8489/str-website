@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import SiteLayoutWrapper from "@/components/layout/SiteLayoutWrapper";
 import SEOSchema from "@/components/shared/SEOSchema";
 import { getOrganizationSchema } from "@/lib/seo";
 
@@ -84,9 +83,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-[#0A1440] text-slate-100 antialiased font-sans">
-        <Navbar />
-        <main className="flex-1 pt-20 md:pt-24">{children}</main>
-        <Footer />
+        <SiteLayoutWrapper>{children}</SiteLayoutWrapper>
       </body>
     </html>
   );

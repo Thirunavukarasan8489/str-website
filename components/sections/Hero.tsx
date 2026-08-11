@@ -12,8 +12,49 @@ import {
   Award,
 } from "lucide-react";
 import CTAButton from "@/components/shared/CTAButton";
+import { HeroData } from "@/types";
 
-export default function Hero() {
+const DEFAULT_HERO_VALUES: HeroData = {
+  badge: 'Bridging Tamil Heritage & Scottish Culture',
+  title: 'Scotland Tamils',
+  highlightTitle: 'Raise Together',
+  subtitle:
+    'Empowering the Tamil community across Edinburgh, Glasgow, Aberdeen, and Dundee through language learning, cultural galas, youth mentorship, and civic unity.',
+  primaryCtaText: 'Join STR Membership',
+  primaryCtaLink: '/membership/join',
+  secondaryCtaText: 'Explore Events',
+  secondaryCtaLink: '/events',
+  familiesCount: '100+',
+  yearsCount: '1+ Yrs',
+  cardBadge: 'Flagship Event 2026',
+  cardTitle: 'Grand Tamil Pongal Vizha',
+  cardSubtitle: 'Edinburgh Assembly Rooms • Jan 17, 2026',
+  imageUrl:
+    'https://images.unsplash.com/photo-1609137144813-7d9921338f24?auto=format&fit=crop&w=1000&q=80',
+  imageAlt: 'Scotland Tamils Raise Pongal Festival Celebration',
+};
+
+interface HeroProps {
+  data?: HeroData;
+}
+
+export default function Hero({ data = DEFAULT_HERO_VALUES }: HeroProps) {
+  const badge = data.badge || DEFAULT_HERO_VALUES.badge;
+  const title = data.title || DEFAULT_HERO_VALUES.title;
+  const highlightTitle = data.highlightTitle || DEFAULT_HERO_VALUES.highlightTitle;
+  const subtitle = data.subtitle || DEFAULT_HERO_VALUES.subtitle;
+  const primaryCtaText = data.primaryCtaText || DEFAULT_HERO_VALUES.primaryCtaText;
+  const primaryCtaLink = data.primaryCtaLink || DEFAULT_HERO_VALUES.primaryCtaLink;
+  const secondaryCtaText = data.secondaryCtaText || DEFAULT_HERO_VALUES.secondaryCtaText;
+  const secondaryCtaLink = data.secondaryCtaLink || DEFAULT_HERO_VALUES.secondaryCtaLink;
+  const familiesCount = data.familiesCount || DEFAULT_HERO_VALUES.familiesCount;
+  const yearsCount = data.yearsCount || DEFAULT_HERO_VALUES.yearsCount;
+  const cardBadge = data.cardBadge || DEFAULT_HERO_VALUES.cardBadge;
+  const cardTitle = data.cardTitle || DEFAULT_HERO_VALUES.cardTitle;
+  const cardSubtitle = data.cardSubtitle || DEFAULT_HERO_VALUES.cardSubtitle;
+  const imageUrl = data.imageUrl || DEFAULT_HERO_VALUES.imageUrl;
+  const imageAlt = data.imageAlt || DEFAULT_HERO_VALUES.imageAlt;
+
   return (
     <section className="relative min-h-[85vh] flex items-center justify-center pt-8 pb-16 overflow-hidden tartan-pattern">
       {/* Glow Orbs */}
@@ -27,38 +68,36 @@ export default function Hero() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1B3A6B]/80 border border-[#C9A227]/40 shadow-sm backdrop-blur-sm">
               <Award className="w-4 h-4 text-[#C9A227]" />
               <span className="text-xs md:text-sm font-semibold text-[#E8C468]">
-                Bridging Tamil Heritage & Scottish Culture
+                {badge}
               </span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-extrabold text-white tracking-tight leading-[1.15]">
-              Scotland Tamils <br className="hidden sm:inline" />
-              <span className="gold-gradient-text">Raise Together</span>
+              {title} <br className="hidden sm:inline" />
+              <span className="gold-gradient-text">{highlightTitle}</span>
             </h1>
 
             <p className="text-base sm:text-lg lg:text-xl text-slate-200 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-normal">
-              Empowering the Tamil community across Edinburgh, Glasgow,
-              Aberdeen, and Dundee through language learning, cultural galas,
-              youth mentorship, and civic unity.
+              {subtitle}
             </p>
 
             {/* CTAs */}
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <CTAButton
-                href="/membership/join"
+                href={primaryCtaLink}
                 variant="primary"
                 className="w-full sm:w-auto"
               >
-                <span>Join STR Membership</span>
+                <span>{primaryCtaText}</span>
                 <ArrowRight className="w-4 h-4 ml-2" />
               </CTAButton>
               <CTAButton
-                href="/events"
+                href={secondaryCtaLink}
                 variant="secondary"
                 className="w-full sm:w-auto"
               >
                 <Calendar className="w-4 h-4 mr-2 text-[#C9A227]" />
-                <span>Explore Events</span>
+                <span>{secondaryCtaText}</span>
               </CTAButton>
             </div>
 
@@ -66,23 +105,15 @@ export default function Hero() {
             <div className="pt-8 border-t border-white/10 grid grid-cols-3 gap-4 max-w-lg mx-auto lg:mx-0">
               <div>
                 <span className="block text-2xl sm:text-3xl font-serif font-bold text-white">
-                  100+
+                  {familiesCount}
                 </span>
                 <span className="text-xs text-slate-400 font-medium">
                   Tamil Families
                 </span>
               </div>
-              {/* <div>
-                <span className="block text-2xl sm:text-3xl font-serif font-bold text-[#E8C468]">
-                  4 Nodes
-                </span>
-                <span className="text-xs text-slate-400 font-medium">
-                  Across Scotland
-                </span>
-              </div> */}
               <div>
                 <span className="block text-2xl sm:text-3xl font-serif font-bold text-white">
-                  1+ Yrs
+                  {yearsCount}
                 </span>
                 <span className="text-xs text-slate-400 font-medium">
                   Community Legacy
@@ -98,8 +129,8 @@ export default function Hero() {
               <div className="relative rounded-2xl overflow-hidden border-2 border-[#C9A227]/40 shadow-2xl gold-glow group">
                 <div className="relative h-[380px] sm:h-[420px] w-full">
                   <Image
-                    src="https://images.unsplash.com/photo-1609137144813-7d9921338f24?auto=format&fit=crop&w=1000&q=80"
-                    alt="Scotland Tamils Raise Pongal Festival Celebration"
+                    src={imageUrl}
+                    alt={imageAlt}
                     fill
                     priority
                     sizes="(max-width: 768px) 100vw, 500px"
@@ -110,13 +141,13 @@ export default function Hero() {
 
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#0A1440] via-[#0A1440]/90 to-transparent">
                   <span className="inline-block text-xs uppercase tracking-wider font-semibold text-[#E8C468] bg-[#1B3A6B] px-3 py-1 rounded-full mb-2 border border-[#C9A227]/30">
-                    Flagship Event 2026
+                    {cardBadge}
                   </span>
                   <h3 className="text-xl font-serif font-bold text-white">
-                    Grand Tamil Pongal Vizha
+                    {cardTitle}
                   </h3>
                   <p className="text-xs text-slate-300 mt-1">
-                    Edinburgh Assembly Rooms • Jan 17, 2026
+                    {cardSubtitle}
                   </p>
                 </div>
               </div>
