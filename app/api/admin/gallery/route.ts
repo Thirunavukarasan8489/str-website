@@ -1,10 +1,21 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { dbConnect } from '@/lib/db';
 import GalleryItem from '@/models/GalleryItem';
 import { deleteCloudinaryImage } from '@/lib/cloudinary';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+function revalidateGalleryPages() {
+  try {
+    revalidatePath('/');
+    revalidatePath('/gallery');
+    revalidatePath('/gallery/[slug]', 'page');
+  } catch (err) {
+    console.warn('Revalidation warning:', err);
+  }
+}
 
 export async function GET() {
   try {
@@ -39,6 +50,7 @@ export async function POST(request: Request) {
       }));
 
       const inserted = await GalleryItem.insertMany(itemsToInsert);
+      revalidateGalleryPages();
 
       return NextResponse.json({
         success: true,
@@ -67,6 +79,8 @@ export async function POST(request: Request) {
       order: data.order || 0,
       isFeatured: Boolean(data.isFeatured),
     });
+
+    revalidateGalleryPages();
 
     return NextResponse.json({
       success: true,
@@ -117,6 +131,8 @@ export async function PUT(request: Request) {
       return NextResponse.json({ success: false, message: 'Photo not found' }, { status: 404 });
     }
 
+    revalidateGalleryPages();
+
     return NextResponse.json({
       success: true,
       message: 'Gallery photo updated successfully',
@@ -151,6 +167,8 @@ export async function DELETE(request: Request) {
       }
 
       const res = await GalleryItem.deleteMany({ _id: { $in: idList } });
+      revalidateGalleryPages();
+
       return NextResponse.json({
         success: true,
         message: `Deleted ${res.deletedCount} photo(s) and cleaned from Cloudinary successfully`,
@@ -164,6 +182,8 @@ export async function DELETE(request: Request) {
         await deleteCloudinaryImage(item.imageUrl);
       }
       await GalleryItem.findByIdAndDelete(id);
+      revalidateGalleryPages();
+
       return NextResponse.json({
         success: true,
         message: 'Gallery photo deleted and cleaned from Cloudinary successfully',

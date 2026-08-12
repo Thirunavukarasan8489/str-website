@@ -38,6 +38,17 @@ export default function LeadsManager() {
     fetchLeads();
   }, []);
 
+  // Lock background body scroll whenever lead detail modal is open
+  useEffect(() => {
+    if (selectedLead) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [selectedLead]);
+
   const fetchLeads = async () => {
     setLoading(true);
     try {
@@ -461,8 +472,8 @@ export default function LeadsManager() {
 
       {/* Detail Modal */}
       {selectedLead && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-[#121F54] border border-[#C9A227]/50 rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl gold-glow">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md overflow-y-auto p-4 sm:p-6 md:p-8 flex justify-center items-start">
+          <div className="relative bg-[#121F54] border border-[#C9A227]/50 rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl gold-glow my-4 sm:my-8 max-h-none">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <h3 className="text-lg font-serif font-bold text-white flex items-center gap-2">
                 <Users className="w-5 h-5 text-[#E8C468]" />

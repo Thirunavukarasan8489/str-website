@@ -7,6 +7,8 @@ import { getFAQSchema, getBreadcrumbSchema } from '@/lib/seo';
 import { FAQS } from '@/lib/data';
 import { CheckCircle2, ShieldCheck, Heart, Award, HelpCircle } from 'lucide-react';
 
+export const revalidate = 60; // Refresh live membership data every 60 seconds
+
 export const metadata: Metadata = {
   title: 'Membership Tiers | Scotland Tamils Raise',
   description:

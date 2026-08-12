@@ -39,6 +39,17 @@ export default function AdminSidebar({
   isOpen,
   onClose,
 }: AdminSidebarProps) {
+  // Lock background scroll on mobile/tablet when sidebar drawer is open
+  React.useEffect(() => {
+    if (isOpen) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [isOpen]);
+
   const menuItems: { id: AdminTab; label: string; icon: React.ComponentType<{ className?: string }>; badge?: number }[] = [
     { id: 'overview', label: 'Overview & Stats', icon: LayoutDashboard },
     { id: 'hero', label: 'Home Hero Section', icon: HomeIcon },

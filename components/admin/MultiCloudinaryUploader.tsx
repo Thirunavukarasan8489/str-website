@@ -73,6 +73,15 @@ export default function MultiCloudinaryUploader({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Lock background body scroll while modal is open
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, []);
+
   // Synchronize category & date when selectedAlbumSlug changes
   useEffect(() => {
     if (selectedAlbumSlug) {
@@ -282,8 +291,8 @@ export default function MultiCloudinaryUploader({
   const doneCount = fileQueue.filter((i) => i.status === 'done').length;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 backdrop-blur-md overflow-y-auto">
-      <div className="bg-[#121F54] border border-[#C9A227]/50 rounded-3xl max-w-3xl w-full p-6 sm:p-8 space-y-6 shadow-2xl gold-glow my-8">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md overflow-y-auto p-4 sm:p-6 md:p-8 flex justify-center items-start">
+      <div className="relative bg-[#121F54] border border-[#C9A227]/50 rounded-3xl max-w-3xl w-full p-6 sm:p-8 space-y-6 shadow-2xl gold-glow my-4 sm:my-8 max-h-none">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-3">

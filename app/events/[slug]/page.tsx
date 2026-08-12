@@ -10,7 +10,7 @@ import { getEventSchema, getBreadcrumbSchema } from '@/lib/seo';
 import { EVENTS_DATA } from '@/lib/data';
 import { formatDate } from '@/lib/utils';
 
-export const revalidate = 3600; // ISR revalidate every hour
+export const revalidate = 60; // ISR revalidate every 60 seconds
 
 interface Props {
   params: Promise<{ slug: string }>;

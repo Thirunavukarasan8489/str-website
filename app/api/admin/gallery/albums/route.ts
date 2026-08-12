@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { dbConnect } from '@/lib/db';
 import GalleryAlbum from '@/models/GalleryAlbum';
 import GalleryItem from '@/models/GalleryItem';
@@ -16,6 +17,16 @@ function generateSlug(text: string): string {
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+function revalidateAlbumPages() {
+  try {
+    revalidatePath('/');
+    revalidatePath('/gallery');
+    revalidatePath('/gallery/[slug]', 'page');
+  } catch (err) {
+    console.warn('Revalidation warning:', err);
+  }
+}
 
 export async function GET() {
   try {
@@ -71,6 +82,8 @@ export async function POST(request: Request) {
       isPublished: data.isPublished !== undefined ? Boolean(data.isPublished) : true,
     });
 
+    revalidateAlbumPages();
+
     return NextResponse.json({
       success: true,
       message: `Album "${newAlbum.title}" created successfully!`,
@@ -120,6 +133,8 @@ export async function PUT(request: Request) {
         { $set: { albumSlug: updateData.slug } }
       );
     }
+
+    revalidateAlbumPages();
 
     return NextResponse.json({
       success: true,
@@ -174,6 +189,8 @@ export async function DELETE(request: Request) {
       // Delete album from MongoDB
       await GalleryAlbum.findByIdAndDelete(id);
     }
+
+    revalidateAlbumPages();
 
     return NextResponse.json({
       success: true,

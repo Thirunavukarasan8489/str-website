@@ -7,7 +7,9 @@ import MilestonesTimeline from '@/components/sections/MilestonesTimeline';
 import CTAButton from '@/components/shared/CTAButton';
 import SEOSchema from '@/components/shared/SEOSchema';
 import { getBreadcrumbSchema } from '@/lib/seo';
-import { ShieldCheck, Heart, Award, Compass, BookOpen, Users } from 'lucide-react';
+import { ShieldCheck, Compass, Users } from 'lucide-react';
+
+export const revalidate = 60; // Refresh live page data every 60 seconds
 
 export const metadata: Metadata = {
   title: 'About Us | Scotland Tamils Raise',

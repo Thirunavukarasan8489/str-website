@@ -6,6 +6,8 @@ import SEOSchema from '@/components/shared/SEOSchema';
 import { getBreadcrumbSchema } from '@/lib/seo';
 import { Heart, ShieldCheck, Award, BookOpen, Users, Sparkles } from 'lucide-react';
 
+export const revalidate = 60; // Refresh live page data every 60 seconds
+
 export const metadata: Metadata = {
   title: 'Support Us & Donate | Scotland Tamils Raise',
   description:

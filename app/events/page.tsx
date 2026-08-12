@@ -6,6 +6,8 @@ import SEOSchema from '@/components/shared/SEOSchema';
 import { getBreadcrumbSchema } from '@/lib/seo';
 import { EVENTS_DATA } from '@/lib/data';
 
+export const revalidate = 60; // Refresh live events data every 60 seconds
+
 export const metadata: Metadata = {
   title: 'Events & Festivals | Scotland Tamils Raise',
   description:

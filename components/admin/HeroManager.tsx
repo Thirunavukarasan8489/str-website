@@ -5,6 +5,8 @@ import Image from 'next/image';
 import CloudinaryUploader from './CloudinaryUploader';
 import { Save, Sparkles, CheckCircle2, AlertCircle, Loader2, RefreshCw, Eye, Home, SquarePen } from 'lucide-react';
 
+import { notifyLiveContentUpdate } from '@/components/shared/LiveRouteRefresher';
+
 interface HeroFormState {
   badge: string;
   title: string;
@@ -98,6 +100,7 @@ export default function HeroManager() {
       const data = await res.json();
       if (res.ok && data.success) {
         setStatusMessage({ type: 'success', text: 'Hero Section updated and published live!' });
+        notifyLiveContentUpdate();
         setTimeout(() => setStatusMessage(null), 5000);
       } else {
         setStatusMessage({ type: 'error', text: data.message || 'Failed to save changes.' });

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { dbConnect } from '@/lib/db';
 import GalleryCategory from '@/models/GalleryCategory';
 import GalleryItem from '@/models/GalleryItem';
@@ -39,6 +40,16 @@ async function getCategoryListAndStats() {
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+function revalidateCategoryPages() {
+  try {
+    revalidatePath('/');
+    revalidatePath('/gallery');
+    revalidatePath('/gallery/[slug]', 'page');
+  } catch (err) {
+    console.warn('Revalidation warning:', err);
+  }
+}
 
 export async function GET() {
   try {
@@ -82,6 +93,7 @@ export async function POST(request: Request) {
     );
 
     const { allCategories, categoryStats } = await getCategoryListAndStats();
+    revalidateCategoryPages();
 
     return NextResponse.json({
       success: true,
@@ -128,6 +140,7 @@ export async function PUT(request: Request) {
     ]);
 
     const { allCategories, categoryStats } = await getCategoryListAndStats();
+    revalidateCategoryPages();
 
     return NextResponse.json({
       success: true,
@@ -191,6 +204,7 @@ export async function DELETE(request: Request) {
     }
 
     const { allCategories, categoryStats } = await getCategoryListAndStats();
+    revalidateCategoryPages();
 
     return NextResponse.json({
       success: true,

@@ -23,6 +23,8 @@ import {
   FileText,
 } from 'lucide-react';
 
+import { notifyLiveContentUpdate } from '@/components/shared/LiveRouteRefresher';
+
 interface NewsArticleData {
   _id?: string;
   id?: string;
@@ -64,6 +66,17 @@ export default function NewsManager() {
   useEffect(() => {
     fetchArticles();
   }, []);
+
+  // Lock background body scroll whenever modal is open
+  useEffect(() => {
+    if (showModal) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [showModal]);
 
   const fetchArticles = async () => {
     setLoading(true);
@@ -158,6 +171,7 @@ export default function NewsManager() {
             ? `"${article.title}" is now Published live!`
             : `"${article.title}" set to Draft (Unpublished).`,
         });
+        notifyLiveContentUpdate();
         setTimeout(() => setStatusMessage(null), 3500);
       }
     } catch (err) {
@@ -195,6 +209,7 @@ export default function NewsManager() {
             ? 'News article published live on website!'
             : 'News article saved as draft (unpublished)!',
         });
+        notifyLiveContentUpdate();
         setShowModal(false);
         fetchArticles();
         setTimeout(() => setStatusMessage(null), 4000);
@@ -220,6 +235,7 @@ export default function NewsManager() {
       if (res.ok && data.success) {
         setArticles(articles.filter((a) => (a._id || a.id) !== id));
         setStatusMessage({ type: 'success', text: 'Article deleted successfully.' });
+        notifyLiveContentUpdate();
         setTimeout(() => setStatusMessage(null), 3000);
       }
     } catch (err) {
@@ -444,8 +460,8 @@ export default function NewsManager() {
 
       {/* Add / Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-[#121F54] border border-[#C9A227]/50 rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl gold-glow my-8">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md overflow-y-auto p-4 sm:p-6 md:p-8 flex justify-center items-start">
+          <div className="relative bg-[#121F54] border border-[#C9A227]/50 rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl gold-glow my-4 sm:my-8 max-h-none">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <h3 className="text-lg font-serif font-bold text-white flex items-center gap-2">
                 <Newspaper className="w-5 h-5 text-[#E8C468]" />

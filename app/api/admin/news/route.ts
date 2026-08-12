@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { dbConnect } from '@/lib/db';
 import NewsArticle from '@/models/NewsArticle';
 import { NEWS_DATA } from '@/lib/data';
@@ -10,6 +11,19 @@ function generateSlug(text: string): string {
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+function revalidateNewsPages() {
+  try {
+    revalidatePath('/');
+    revalidatePath('/news');
+    revalidatePath('/news/[slug]', 'page');
+  } catch (err) {
+    console.warn('Revalidation warning:', err);
+  }
 }
 
 export async function GET() {
@@ -56,6 +70,8 @@ export async function POST(request: Request) {
       isPublished: data.isPublished !== undefined ? Boolean(data.isPublished) : true,
     });
 
+    revalidateNewsPages();
+
     return NextResponse.json({
       success: true,
       message: 'News article published successfully',
@@ -93,6 +109,8 @@ export async function PUT(request: Request) {
       return NextResponse.json({ success: false, message: 'Article not found' }, { status: 404 });
     }
 
+    revalidateNewsPages();
+
     return NextResponse.json({
       success: true,
       message: 'News article updated successfully',
@@ -120,6 +138,7 @@ export async function DELETE(request: Request) {
 
     await dbConnect();
     await NewsArticle.findByIdAndDelete(id);
+    revalidateNewsPages();
 
     return NextResponse.json({
       success: true,
