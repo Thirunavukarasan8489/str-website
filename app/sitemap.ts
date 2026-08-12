@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
-import { EVENTS_DATA, NEWS_DATA, GALLERY_ALBUMS_DATA } from '@/lib/data';
+import { getEventsList, getNewsList, getGalleryAlbums } from '@/lib/contentService';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://scotlandtamilsraise.org';
 
   const staticRoutes = [
@@ -23,21 +23,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === '' ? 1.0 : 0.8,
   }));
 
-  const eventRoutes = EVENTS_DATA.map((event) => ({
+  const [events, news, albums] = await Promise.all([
+    getEventsList(),
+    getNewsList(),
+    getGalleryAlbums(),
+  ]);
+
+  const eventRoutes = events.map((event) => ({
     url: `${baseUrl}/events/${event.slug}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
     priority: 0.9,
   }));
 
-  const newsRoutes = NEWS_DATA.map((article) => ({
+  const newsRoutes = news.map((article) => ({
     url: `${baseUrl}/news/${article.slug}`,
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
     priority: 0.7,
   }));
 
-  const galleryRoutes = GALLERY_ALBUMS_DATA.map((album) => ({
+  const galleryRoutes = albums.map((album) => ({
     url: `${baseUrl}/gallery/${album.slug}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,

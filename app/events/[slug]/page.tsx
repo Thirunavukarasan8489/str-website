@@ -7,7 +7,7 @@ import { Calendar, Clock, MapPin, Ticket, ArrowLeft, CheckCircle2, Share2 } from
 import CTAButton from '@/components/shared/CTAButton';
 import SEOSchema from '@/components/shared/SEOSchema';
 import { getEventSchema, getBreadcrumbSchema } from '@/lib/seo';
-import { EVENTS_DATA } from '@/lib/data';
+import { getEventBySlug, getEventsList } from '@/lib/contentService';
 import { formatDate } from '@/lib/utils';
 
 export const revalidate = 60; // ISR revalidate every 60 seconds
@@ -17,14 +17,15 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  return EVENTS_DATA.map((event) => ({
+  const events = await getEventsList();
+  return events.map((event) => ({
     slug: event.slug,
   }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const event = EVENTS_DATA.find((e) => e.slug === slug);
+  const event = await getEventBySlug(slug);
   if (!event) return { title: 'Event Not Found' };
 
   return {
@@ -40,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SingleEventPage({ params }: Props) {
   const { slug } = await params;
-  const event = EVENTS_DATA.find((e) => e.slug === slug);
+  const event = await getEventBySlug(slug);
 
   if (!event) {
     notFound();

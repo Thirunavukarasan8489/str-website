@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import AdminSidebar, { AdminTab } from '@/components/admin/AdminSidebar';
 import AdminOverview from '@/components/admin/AdminOverview';
 import HeroManager from '@/components/admin/HeroManager';
+import EventsManager from '@/components/admin/EventsManager';
 import GalleryManager from '@/components/admin/GalleryManager';
 import NewsManager from '@/components/admin/NewsManager';
 import LeadsManager from '@/components/admin/LeadsManager';
@@ -17,6 +18,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const [eventsCount, setEventsCount] = useState(0);
   const [leadsCount, setLeadsCount] = useState(0);
   const [newsCount, setNewsCount] = useState(0);
   const [galleryCount, setGalleryCount] = useState(0);
@@ -38,18 +40,21 @@ export default function AdminPage() {
 
   const loadBadges = async () => {
     try {
-      const [leadsRes, newsRes, galleryRes] = await Promise.all([
+      const [leadsRes, newsRes, galleryRes, eventsRes] = await Promise.all([
         fetch('/api/admin/leads'),
         fetch('/api/admin/news'),
         fetch('/api/admin/gallery'),
+        fetch('/api/admin/events'),
       ]);
       const leads = await leadsRes.json();
       const news = await newsRes.json();
       const gallery = await galleryRes.json();
+      const events = await eventsRes.json();
 
       setLeadsCount((leads.members?.length || 0) + (leads.messages?.length || 0));
       setNewsCount(news.articles?.length || 0);
       setGalleryCount(gallery.items?.length || 0);
+      setEventsCount(events.events?.length || 0);
     } catch (err) {
       console.error('Error loading badge stats', err);
     }
@@ -89,6 +94,7 @@ export default function AdminPage() {
       <AdminSidebar
         activeTab={activeTab}
         onSelectTab={(tab) => setActiveTab(tab)}
+        eventsCount={eventsCount}
         leadsCount={leadsCount}
         newsCount={newsCount}
         galleryCount={galleryCount}
@@ -114,6 +120,8 @@ export default function AdminPage() {
               <span className="text-[#E8C468] font-bold capitalize">
                 {activeTab === 'hero'
                   ? 'Hero Section'
+                  : activeTab === 'events'
+                  ? 'Events & Galas'
                   : activeTab === 'leads'
                   ? 'Leads & Inquiries'
                   : activeTab}
@@ -145,6 +153,7 @@ export default function AdminPage() {
         <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto">
           {activeTab === 'overview' && <AdminOverview onSelectTab={setActiveTab} />}
           {activeTab === 'hero' && <HeroManager />}
+          {activeTab === 'events' && <EventsManager />}
           {activeTab === 'gallery' && <GalleryManager />}
           {activeTab === 'news' && <NewsManager />}
           {activeTab === 'leads' && <LeadsManager />}

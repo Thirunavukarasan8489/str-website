@@ -258,8 +258,14 @@ scotland-tamils-raise/
 
 - **Admin Dashboard (`components/admin/`, `app/admin/`):**
   - [page.tsx](file:///f:/Thiru/frontend/Personal/str-website/app/admin/page.tsx): Main admin layout with tab switching, mobile drawer navigation, and session guard.
-  - [AdminSidebar.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/AdminSidebar.tsx): Responsive navigation bar with live lead/article counts.
-  - [AdminOverview.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/AdminOverview.tsx): Dashboard metrics summary and quick action cards.
+  - [AdminSidebar.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/AdminSidebar.tsx): Responsive navigation bar with live lead/article/event counts.
+  - [AdminOverview.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/AdminOverview.tsx): Dashboard metrics summary and quick action cards with live event statistics.
+  - [EventsManager.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/EventsManager.tsx): Full-featured Community Events CMS:
+    - Create, edit, and delete cultural events and festivals.
+    - Cloudinary poster/image integration with auto CDN asset cleanup on deletion.
+    - Interactive agenda breakdown and schedule timeline builder.
+    - Dynamic status toggles: Registration Open/Closed, Featured Flagship, and Past Event archive.
+    - City and category filters with instant ISR revalidation across `/`, `/events`, and `/events/[slug]`.
   - [HeroManager.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/HeroManager.tsx): Live editor for hero copy, metrics, CTA buttons, and celebration photo with live preview.
   - [GalleryManager.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/admin/GalleryManager.tsx): Complete Album & Photo management suite:
     - **100% Dynamic Categories**: Removed all hardcoded static categories; categories are strictly created/edited/deleted from MongoDB.
@@ -289,13 +295,13 @@ scotland-tamils-raise/
 ### ✅ 4. Data Layer & Real-Time API Endpoints
 
 - **Permanent Deletion & Zero Auto-Reseeding ([lib/contentService.ts](file:///f:/Thiru/frontend/Personal/str-website/lib/contentService.ts), [app/api/admin/](file:///f:/Thiru/frontend/Personal/str-website/app/api/admin/)):**
-  - Removed all `if (count === 0)` auto-insertion blocks across Gallery Photos, Albums, and News APIs.
-  - Deleting all photos or albums leaves the database clean without resurrecting static mock data.
+  - Removed all `if (count === 0)` auto-insertion blocks and static fallback data across Gallery Photos, Albums, News, and Events.
+  - Cleared `EVENTS_DATA` static array — the website strictly renders live events added via the Admin CMS (`/admin`), displaying a clean responsive empty state when no events are scheduled.
+  - **Dynamic Event Categories**: Implemented `models/EventCategory.ts` and `app/api/admin/events/categories/route.ts` enabling admins to create, edit, and delete event categories on the fly with category re-assignment and live count tracking.
 - **Force-Dynamic Route Handlers**:
   - Added `export const dynamic = 'force-dynamic'` and `export const revalidate = 0` to all `/api/admin/*` endpoints to eliminate stale browser/Next.js cache.
-- **Homepage Gallery Preview ([components/sections/GalleryPreview.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/sections/GalleryPreview.tsx)):**
-  - Dynamic album collection cards matching the `/gallery` page reference.
-  - Displays up to 6 latest album cards queried via `getGalleryAlbums()`.
+- **Homepage Gallery Preview & Events Carousel ([components/sections/GalleryPreview.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/sections/GalleryPreview.tsx), [components/sections/EventsCarousel.tsx](file:///f:/Thiru/frontend/Personal/str-website/components/sections/EventsCarousel.tsx)):**
+  - Dynamic album collection cards and dynamic community events queried via `getGalleryAlbums()` and `getEventsList()`.
 
 ---
 

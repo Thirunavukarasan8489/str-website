@@ -5,21 +5,22 @@ import EventsCarousel from '@/components/sections/EventsCarousel';
 import GalleryPreview from '@/components/sections/GalleryPreview';
 import MembershipTiers from '@/components/sections/MembershipTiers';
 import NewsletterSignup from '@/components/sections/NewsletterSignup';
-import { getHeroData, getGalleryAlbums } from '@/lib/contentService';
+import { getHeroData, getGalleryAlbums, getEventsList } from '@/lib/contentService';
 
 export const revalidate = 60; // Refresh live homepage content from DB every 60 seconds
 
 export default async function Home() {
-  const [heroData, albums] = await Promise.all([
+  const [heroData, albums, events] = await Promise.all([
     getHeroData(),
     getGalleryAlbums(),
+    getEventsList(),
   ]);
 
   return (
     <div className="flex flex-col min-h-screen">
       <Hero data={heroData} />
       <AboutPreview />
-      <EventsCarousel />
+      <EventsCarousel initialEvents={events} />
       <GalleryPreview initialAlbums={albums} />
       <MembershipTiers />
       <NewsletterSignup />

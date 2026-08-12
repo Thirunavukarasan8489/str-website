@@ -28,6 +28,7 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
     subscribers: 0,
     gallery: 0,
     news: 0,
+    events: 0,
   });
   const [recentMembers, setRecentMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,15 +36,17 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
   useEffect(() => {
     async function loadAllStats() {
       try {
-        const [leadsRes, galleryRes, newsRes] = await Promise.all([
+        const [leadsRes, galleryRes, newsRes, eventsRes] = await Promise.all([
           fetch('/api/admin/leads'),
           fetch('/api/admin/gallery'),
           fetch('/api/admin/news'),
+          fetch('/api/admin/events'),
         ]);
 
         const leadsData = await leadsRes.json();
         const galleryData = await galleryRes.json();
         const newsData = await newsRes.json();
+        const eventsData = await eventsRes.json();
 
         setStats({
           members: leadsData.members?.length || 0,
@@ -51,6 +54,7 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
           subscribers: leadsData.subscribers?.length || 0,
           gallery: galleryData.items?.length || 0,
           news: newsData.articles?.length || 0,
+          events: eventsData.events?.length || 0,
         });
 
         if (leadsData.members) {
@@ -88,76 +92,103 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
         <div
-          onClick={() => onSelectTab('leads')}
-          className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-6 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
+          onClick={() => onSelectTab('events')}
+          className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-5 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-[#0A1440] text-[#E8C468] flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Users className="w-6 h-6" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 rounded-xl bg-[#0A1440] text-[#E8C468] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Calendar className="w-5 h-5" />
             </div>
             <span className="text-xs font-bold text-[#E8C468] flex items-center gap-1">
-              View Leads <ArrowRight className="w-3.5 h-3.5" />
+              Manage <ArrowRight className="w-3 h-3" />
             </span>
           </div>
-          <span className="block text-3xl font-serif font-extrabold text-white">{stats.members}</span>
+          <span className="block text-2xl font-serif font-extrabold text-white">{stats.events}</span>
+          <span className="text-xs text-slate-300 font-medium">Community Events</span>
+        </div>
+
+        <div
+          onClick={() => onSelectTab('leads')}
+          className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-5 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 rounded-xl bg-[#0A1440] text-[#E8C468] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Users className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-bold text-[#E8C468] flex items-center gap-1">
+              View <ArrowRight className="w-3 h-3" />
+            </span>
+          </div>
+          <span className="block text-2xl font-serif font-extrabold text-white">{stats.members}</span>
           <span className="text-xs text-slate-300 font-medium">Registered Members</span>
         </div>
 
         <div
           onClick={() => onSelectTab('leads')}
-          className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-6 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
+          className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-5 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-[#0A1440] text-[#E8C468] flex items-center justify-center group-hover:scale-110 transition-transform">
-              <MessageSquare className="w-6 h-6" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 rounded-xl bg-[#0A1440] text-[#E8C468] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <MessageSquare className="w-5 h-5" />
             </div>
             <span className="text-xs font-bold text-[#E8C468] flex items-center gap-1">
-              Inquiries <ArrowRight className="w-3.5 h-3.5" />
+              Inquiries <ArrowRight className="w-3 h-3" />
             </span>
           </div>
-          <span className="block text-3xl font-serif font-extrabold text-white">{stats.messages}</span>
-          <span className="text-xs text-slate-300 font-medium">Contact Form Messages</span>
+          <span className="block text-2xl font-serif font-extrabold text-white">{stats.messages}</span>
+          <span className="text-xs text-slate-300 font-medium">Contact Messages</span>
         </div>
 
         <div
           onClick={() => onSelectTab('gallery')}
-          className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-6 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
+          className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-5 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-[#0A1440] text-[#E8C468] flex items-center justify-center group-hover:scale-110 transition-transform">
-              <ImageIcon className="w-6 h-6" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 rounded-xl bg-[#0A1440] text-[#E8C468] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <ImageIcon className="w-5 h-5" />
             </div>
             <span className="text-xs font-bold text-[#E8C468] flex items-center gap-1">
-              Gallery <ArrowRight className="w-3.5 h-3.5" />
+              Gallery <ArrowRight className="w-3 h-3" />
             </span>
           </div>
-          <span className="block text-3xl font-serif font-extrabold text-white">{stats.gallery}</span>
-          <span className="text-xs text-slate-300 font-medium">Photos in Gallery</span>
+          <span className="block text-2xl font-serif font-extrabold text-white">{stats.gallery}</span>
+          <span className="text-xs text-slate-300 font-medium">Gallery Photos</span>
         </div>
 
         <div
           onClick={() => onSelectTab('news')}
-          className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-6 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
+          className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-5 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-[#0A1440] text-[#E8C468] flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Newspaper className="w-6 h-6" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 rounded-xl bg-[#0A1440] text-[#E8C468] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Newspaper className="w-5 h-5" />
             </div>
             <span className="text-xs font-bold text-[#E8C468] flex items-center gap-1">
-              Articles <ArrowRight className="w-3.5 h-3.5" />
+              Articles <ArrowRight className="w-3 h-3" />
             </span>
           </div>
-          <span className="block text-3xl font-serif font-extrabold text-white">{stats.news}</span>
-          <span className="text-xs text-slate-300 font-medium">Published News Posts</span>
+          <span className="block text-2xl font-serif font-extrabold text-white">{stats.news}</span>
+          <span className="text-xs text-slate-300 font-medium">Published News</span>
         </div>
       </div>
 
       {/* Quick Action Buttons */}
       <div className="bg-[#121F54] border border-[#1B3A6B] rounded-2xl p-6 space-y-4 shadow-xl">
         <h3 className="text-base font-serif font-bold text-white">Quick Management Actions</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <button
+            onClick={() => onSelectTab('events')}
+            className="p-4 rounded-xl bg-[#0A1440] hover:bg-[#1B3A6B] border border-white/10 text-left transition-colors flex items-center gap-3"
+          >
+            <Calendar className="w-5 h-5 text-[#E8C468]" />
+            <div>
+              <div className="text-xs font-bold text-white">Schedule Event</div>
+              <div className="text-[11px] text-slate-400">Add festival / gala</div>
+            </div>
+          </button>
+
           <button
             onClick={() => onSelectTab('hero')}
             className="p-4 rounded-xl bg-[#0A1440] hover:bg-[#1B3A6B] border border-white/10 text-left transition-colors flex items-center gap-3"
@@ -197,8 +228,8 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
           >
             <Users className="w-5 h-5 text-[#E8C468]" />
             <div>
-              <div className="text-xs font-bold text-white">Review Registrations</div>
-              <div className="text-[11px] text-slate-400">{stats.members} recent applicants</div>
+              <div className="text-xs font-bold text-white">Review Leads</div>
+              <div className="text-[11px] text-slate-400">{stats.members} registrations</div>
             </div>
           </button>
         </div>

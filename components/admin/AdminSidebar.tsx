@@ -14,13 +14,15 @@ import {
   ExternalLink,
   ShieldCheck,
   ChevronRight,
+  Calendar,
 } from 'lucide-react';
 
-export type AdminTab = 'overview' | 'hero' | 'gallery' | 'news' | 'leads' | 'settings';
+export type AdminTab = 'overview' | 'hero' | 'events' | 'gallery' | 'news' | 'leads' | 'settings';
 
 interface AdminSidebarProps {
   activeTab: AdminTab;
   onSelectTab: (tab: AdminTab) => void;
+  eventsCount?: number;
   leadsCount?: number;
   newsCount?: number;
   galleryCount?: number;
@@ -32,6 +34,7 @@ interface AdminSidebarProps {
 export default function AdminSidebar({
   activeTab,
   onSelectTab,
+  eventsCount = 0,
   leadsCount = 0,
   newsCount = 0,
   galleryCount = 0,
@@ -53,6 +56,7 @@ export default function AdminSidebar({
   const menuItems: { id: AdminTab; label: string; icon: React.ComponentType<{ className?: string }>; badge?: number }[] = [
     { id: 'overview', label: 'Overview & Stats', icon: LayoutDashboard },
     { id: 'hero', label: 'Home Hero Section', icon: HomeIcon },
+    { id: 'events', label: 'Events & Galas', icon: Calendar, badge: eventsCount },
     { id: 'gallery', label: 'Photo Gallery', icon: ImageIcon, badge: galleryCount },
     { id: 'news', label: 'News & Media', icon: Newspaper, badge: newsCount },
     { id: 'leads', label: 'Leads & Enquiries', icon: Users, badge: leadsCount },

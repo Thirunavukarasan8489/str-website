@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
-import { EVENTS_DATA } from '@/lib/data';
+import { getEventsList } from '@/lib/contentService';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const city = searchParams.get('city');
   const category = searchParams.get('category');
 
-  let filtered = EVENTS_DATA;
+  const allEvents = await getEventsList();
+  let filtered = allEvents;
+
   if (city) {
     filtered = filtered.filter((e) => e.city.toLowerCase() === city.toLowerCase());
   }
