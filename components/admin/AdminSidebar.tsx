@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   Home as HomeIcon,
@@ -12,8 +13,6 @@ import {
   Settings,
   LogOut,
   ExternalLink,
-  ShieldCheck,
-  ChevronRight,
   Calendar,
   TicketCheck,
 } from 'lucide-react';
@@ -21,8 +20,8 @@ import {
 export type AdminTab = 'overview' | 'hero' | 'events' | 'bookings' | 'gallery' | 'news' | 'leads' | 'settings';
 
 interface AdminSidebarProps {
-  activeTab: AdminTab;
-  onSelectTab: (tab: AdminTab) => void;
+  activeTab?: AdminTab;
+  onSelectTab?: (tab: AdminTab) => void;
   eventsCount?: number;
   bookingsCount?: number;
   leadsCount?: number;
@@ -34,8 +33,6 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({
-  activeTab,
-  onSelectTab,
   eventsCount = 0,
   bookingsCount = 0,
   leadsCount = 0,
@@ -45,6 +42,8 @@ export default function AdminSidebar({
   isOpen,
   onClose,
 }: AdminSidebarProps) {
+  const pathname = usePathname();
+
   // Lock background scroll on mobile/tablet when sidebar drawer is open
   React.useEffect(() => {
     if (isOpen) {
@@ -56,15 +55,15 @@ export default function AdminSidebar({
     }
   }, [isOpen]);
 
-  const menuItems: { id: AdminTab; label: string; icon: React.ComponentType<{ className?: string }>; badge?: number }[] = [
-    { id: 'overview', label: 'Overview & Stats', icon: LayoutDashboard },
-    { id: 'hero', label: 'Home Hero Section', icon: HomeIcon },
-    { id: 'events', label: 'Events & Galas', icon: Calendar, badge: eventsCount },
-    { id: 'bookings', label: 'Ticket Bookings', icon: TicketCheck, badge: bookingsCount },
-    { id: 'gallery', label: 'Photo Gallery', icon: ImageIcon, badge: galleryCount },
-    { id: 'news', label: 'News & Media', icon: Newspaper, badge: newsCount },
-    { id: 'leads', label: 'Leads & Enquiries', icon: Users, badge: leadsCount },
-    { id: 'settings', label: 'Settings & Cloudinary', icon: Settings },
+  const menuItems: { href: string; label: string; icon: React.ComponentType<{ className?: string }>; badge?: number }[] = [
+    { href: '/admin', label: 'Overview & Stats', icon: LayoutDashboard },
+    { href: '/admin/hero', label: 'Home Hero Section', icon: HomeIcon },
+    { href: '/admin/events', label: 'Events & Galas', icon: Calendar, badge: eventsCount },
+    { href: '/admin/bookings', label: 'Ticket Bookings', icon: TicketCheck, badge: bookingsCount },
+    { href: '/admin/gallery', label: 'Photo Gallery', icon: ImageIcon, badge: galleryCount },
+    { href: '/admin/news', label: 'News & Media', icon: Newspaper, badge: newsCount },
+    { href: '/admin/leads', label: 'Leads & Enquiries', icon: Users, badge: leadsCount },
+    { href: '/admin/settings', label: 'Settings & Cloudinary', icon: Settings },
   ];
 
   return (
@@ -85,33 +84,32 @@ export default function AdminSidebar({
       >
         {/* Top Brand Header */}
         <div className="shrink-0 p-6 border-b border-[#1B3A6B] flex items-center justify-between bg-[#070D2B]">
-          <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[#C9A227]">
+          <Link href="/admin" onClick={onClose} className="flex items-center gap-3 group">
+            <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[#C9A227] group-hover:scale-105 transition-transform">
               <Image src="/logo.png" alt="STR Logo" fill className="object-cover" />
             </div>
             <div>
-              <h2 className="text-sm font-serif font-bold text-white leading-tight">
+              <h2 className="text-sm font-serif font-bold text-white leading-tight group-hover:text-[#E8C468] transition-colors">
                 STR Scotland
               </h2>
               <span className="text-[10px] text-[#E8C468] uppercase tracking-wider font-semibold">
                 Admin Dashboard
               </span>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Navigation Links - Scrollable Middle Area */}
         <nav className="flex-1 overflow-y-auto p-4 space-y-1.5 min-h-0">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeTab === item.id;
+            const isActive = item.href === '/admin' ? pathname === '/admin' : pathname?.startsWith(item.href);
+
             return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onSelectTab(item.id);
-                  onClose();
-                }}
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
                   isActive
                     ? 'bg-gradient-to-r from-[#C9A227] to-[#E8C468] text-[#0A1440] font-bold shadow-md shadow-[#C9A227]/20'
@@ -132,7 +130,7 @@ export default function AdminSidebar({
                     {item.badge}
                   </span>
                 )}
-              </button>
+              </Link>
             );
           })}
         </nav>

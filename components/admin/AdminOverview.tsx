@@ -15,13 +15,19 @@ import {
   LayoutDashboard,
   SquarePen,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { AdminTab } from './AdminSidebar';
 
 interface AdminOverviewProps {
-  onSelectTab: (tab: AdminTab) => void;
+  onSelectTab?: (tab: AdminTab) => void;
 }
 
 export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
+  const router = useRouter();
+  const navigateTo = (path: string, tab: AdminTab) => {
+    if (onSelectTab) onSelectTab(tab);
+    router.push(path);
+  };
   const [stats, setStats] = useState({
     members: 0,
     messages: 0,
@@ -94,7 +100,7 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
       {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
         <div
-          onClick={() => onSelectTab('events')}
+          onClick={() => navigateTo('/admin/events', 'events')}
           className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-5 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
         >
           <div className="flex items-center justify-between mb-3">
@@ -110,7 +116,7 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
         </div>
 
         <div
-          onClick={() => onSelectTab('leads')}
+          onClick={() => navigateTo('/admin/leads', 'leads')}
           className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-5 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
         >
           <div className="flex items-center justify-between mb-3">
@@ -126,7 +132,7 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
         </div>
 
         <div
-          onClick={() => onSelectTab('leads')}
+          onClick={() => navigateTo('/admin/leads', 'leads')}
           className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-5 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
         >
           <div className="flex items-center justify-between mb-3">
@@ -142,7 +148,7 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
         </div>
 
         <div
-          onClick={() => onSelectTab('gallery')}
+          onClick={() => navigateTo('/admin/gallery', 'gallery')}
           className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-5 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
         >
           <div className="flex items-center justify-between mb-3">
@@ -158,7 +164,7 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
         </div>
 
         <div
-          onClick={() => onSelectTab('news')}
+          onClick={() => navigateTo('/admin/news', 'news')}
           className="bg-[#121F54] border border-[#1B3A6B] hover:border-[#C9A227] rounded-2xl p-5 shadow-xl cursor-pointer transition-all hover:-translate-y-1 group gold-glow-hover"
         >
           <div className="flex items-center justify-between mb-3">
@@ -179,7 +185,7 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
         <h3 className="text-base font-serif font-bold text-white">Quick Management Actions</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <button
-            onClick={() => onSelectTab('events')}
+            onClick={() => navigateTo('/admin/events', 'events')}
             className="p-4 rounded-xl bg-[#0A1440] hover:bg-[#1B3A6B] border border-white/10 text-left transition-colors flex items-center gap-3"
           >
             <Calendar className="w-5 h-5 text-[#E8C468]" />
@@ -190,7 +196,7 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
           </button>
 
           <button
-            onClick={() => onSelectTab('hero')}
+            onClick={() => navigateTo('/admin/hero', 'hero')}
             className="p-4 rounded-xl bg-[#0A1440] hover:bg-[#1B3A6B] border border-white/10 text-left transition-colors flex items-center gap-3"
           >
             <SquarePen className="w-5 h-5 text-[#E8C468]" />
@@ -201,7 +207,7 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
           </button>
 
           <button
-            onClick={() => onSelectTab('gallery')}
+            onClick={() => navigateTo('/admin/gallery', 'gallery')}
             className="p-4 rounded-xl bg-[#0A1440] hover:bg-[#1B3A6B] border border-white/10 text-left transition-colors flex items-center gap-3"
           >
             <ImageIcon className="w-5 h-5 text-[#E8C468]" />
@@ -212,7 +218,7 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
           </button>
 
           <button
-            onClick={() => onSelectTab('news')}
+            onClick={() => navigateTo('/admin/news', 'news')}
             className="p-4 rounded-xl bg-[#0A1440] hover:bg-[#1B3A6B] border border-white/10 text-left transition-colors flex items-center gap-3"
           >
             <Newspaper className="w-5 h-5 text-[#E8C468]" />
@@ -223,7 +229,7 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
           </button>
 
           <button
-            onClick={() => onSelectTab('leads')}
+            onClick={() => navigateTo('/admin/leads', 'leads')}
             className="p-4 rounded-xl bg-[#0A1440] hover:bg-[#1B3A6B] border border-white/10 text-left transition-colors flex items-center gap-3"
           >
             <Users className="w-5 h-5 text-[#E8C468]" />
@@ -240,8 +246,8 @@ export default function AdminOverview({ onSelectTab }: AdminOverviewProps) {
         <div className="flex items-center justify-between">
           <h3 className="text-base font-serif font-bold text-white">Recent Member Registrations</h3>
           <button
-            onClick={() => onSelectTab('leads')}
-            className="text-xs text-[#E8C468] hover:underline font-semibold"
+            onClick={() => navigateTo('/admin/leads', 'leads')}
+            className="text-xs text-[#E8C468] hover:underline font-semibold cursor-pointer"
           >
             View All ({stats.members})
           </button>

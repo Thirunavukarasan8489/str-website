@@ -241,11 +241,19 @@ scotland-tamils-raise/
 
 | Route | Type | Description | Schema / SEO | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| `/admin` | Static (○) | No-code Admin Control Center: Hero Editor, Gallery CMS, News CMS, Leads Tracker | Authenticated Admin | **Completed** |
+| `/admin` | Static (○) | Admin Overview & Stats Dashboard | Authenticated Admin | **Completed** |
+| `/admin/hero` | Static (○) | Home Hero Section Copy & Media CMS | Authenticated Admin | **Completed** |
+| `/admin/events` | Static (○) | Community Events & Galas CMS with Ticket Pass builder | Authenticated Admin | **Completed** |
+| `/admin/bookings` | Static (○) | Event Ticket Bookings CMS with CSV Export & Check-ins | Authenticated Admin | **Completed** |
+| `/admin/gallery` | Static (○) | Photo & Album Gallery Suite with Cloudinary Uploader | Authenticated Admin | **Completed** |
+| `/admin/news` | Static (○) | News & Press Releases Publication CMS | Authenticated Admin | **Completed** |
+| `/admin/leads` | Static (○) | Leads & Inquiries Center (Members, Contact, Subscribers) | Authenticated Admin | **Completed** |
+| `/admin/settings` | Static (○) | Admin Settings & Cloudinary Credentials Config | Authenticated Admin | **Completed** |
 | `/` | Static/ISR (○) | Homepage: Dynamic Hero, AboutPreview, EventsCarousel, Live Album Cards Gallery, MembershipTiers, Newsletter | `Organization` JSON-LD | **Completed** |
 | `/about` | Static (○) | About Us: History, constitutional 5 pillars, milestones timeline, community advocacy | `BreadcrumbList`, `Organization` | **Completed** |
 | `/events` | Static (○) | Events Calendar: Upcoming (2026) and past event archives with filtering | `BreadcrumbList` | **Completed** |
 | `/events/[slug]` | SSG/ISR (●) | Dynamic event details: Agendas, ticket links, schedule breakdown, ISR revalidate (1 hr) | `Event`, `BreadcrumbList` | **Completed** |
+| `/events/register` | Static (○) | Dedicated Event Ticket Pass Registration with Confirmation Printable Ticket Card | `BreadcrumbList` | **Completed** |
 | `/gallery` | Static/ISR (○) | Gallery Collections Overview: Album cards with covers, dynamic category pills & photo counts | `BreadcrumbList` | **Completed** |
 | `/gallery/[slug]` | SSG/ISR (●) | Single Album Gallery: High-res photo grid with Lightbox modal, related albums | `BreadcrumbList` | **Completed** |
 | `/membership` | Static (○) | Membership tier overview (Individual, Family, Student, Lifetime Patron) & FAQs | `FAQPage`, `BreadcrumbList` | **Completed** |
@@ -261,59 +269,43 @@ scotland-tamils-raise/
 
 ### ✅ 2. Layout, Header & Footer Enhancements
 
-- **Navbar & Logo Integration ([components/layout/Navbar.tsx](file:///e:/Projects/str-website/components/layout/Navbar.tsx)):**
+- **Navbar & Active Route Matching ([components/layout/Navbar.tsx](file:///e:/Projects/str-website/components/layout/Navbar.tsx)):**
   - Integrated official `/logo.png` image with circular gold accent border.
   - Sticky glassmorphic backdrop-blur header on scroll (`bg-[#0A1440]/90 backdrop-blur-md`).
+  - Active route check matches sub-routes (`pathname.startsWith(`${link.href}/`)`), highlighting the active menu tab when visiting dynamic event, news, or gallery pages.
 - **Smooth Mobile Navigation Drawer ([components/layout/MobileMenu.tsx](file:///e:/Projects/str-website/components/layout/MobileMenu.tsx)):**
   - Upgraded to Framer Motion spring physics (`damping: 25, stiffness: 220`) for smooth right-to-left drawer slide (`x: '100%'` → `x: 0`).
   - Added dark backdrop blur fade (`opacity: 0` → `1`) and automatic body scroll locking when active.
-  - Staggered entrance animations (`delay: 0.05s`) for navigation links.
 - **Footer Updates ([components/layout/Footer.tsx](file:///e:/Projects/str-website/components/layout/Footer.tsx)):**
   - Embedded official organization logo image in footer brand block.
   - Added separate links for Privacy Policy (`/privacy`) and Terms of Service (`/terms`).
-  - Clean inline SVG icons for Facebook, Instagram, and Twitter/X.
 
 ---
 
-### ✅ 3. Dedicated Legal & Governance Pages
+### ✅ 3. Event Ticket Registration & Printable Ticket Pass System
 
-- **Privacy Policy Page ([app/privacy/page.tsx](file:///e:/Projects/str-website/app/privacy/page.tsx)):**
-  - Styled with dark navy (`#0A1440`) & gold (`#C9A227`) design system.
-  - Outlines UK GDPR compliance, information collection (membership, event booking, contact details), usage policies, user rights, and contact details for data inquiries.
-- **Terms of Service Page ([app/terms/page.tsx](file:///e:/Projects/str-website/app/terms/page.tsx)):**
-  - Formatted with structured card sections detailing the Community Code of Conduct, membership terms & AGM voting rights, event ticket refund policies, media release guidelines, and Scottish governing law.
-
----
-
-### ✅ 4. Image Configuration & Remote Domain Support
-
-- **Next.js Image Domain Configuration ([next.config.ts](file:///e:/Projects/str-website/next.config.ts)):**
-  - Configured `images.remotePatterns` for `images.unsplash.com` enabling Next.js `<Image />` optimization across event cards, hero visual frames, and photo gallery preview items.
-  - Placed fallback `/logo.png` in `public/` and `public/images/logo.png`.
+- **Public Ticket Registration Route (`/events/register`):**
+  - Reads `?event=<slug>` query parameter and pre-populates event poster, venue, date, and multi-tier ticket pass rates.
+  - Generates a unique **Booking Reference Code** (`STR-EVT-XXXXX-1234`) upon reservation.
+  - Printable Ticket Pass: `@media print` CSS rules isolate the admission pass card for clean paper printing or saving as PDF without site navigation clutter.
+- **Admin Ticket Bookings CMS (`/admin/bookings`):**
+  - Full-featured bookings manager (`EventBookingsManager.tsx`) with search, filter, check-in status toggles, and direct CSV Export.
 
 ---
 
-### ✅ 5. Admin Control Suite & Dynamic CMS Enhancements
+### ✅ 4. Next.js App Router Admin Folder Structure
 
-- **Admin Dashboard (`components/admin/`, `app/admin/`):**
-  - [page.tsx](file:///e:/Projects/str-website/app/admin/page.tsx): Main admin layout with tab switching, mobile drawer navigation, and session guard.
-  - [AdminSidebar.tsx](file:///e:/Projects/str-website/components/admin/AdminSidebar.tsx): Responsive navigation bar with live lead/article/event counts.
-  - [AdminOverview.tsx](file:///e:/Projects/str-website/components/admin/AdminOverview.tsx): Dashboard metrics summary and quick action cards with live event statistics.
-  - [EventsManager.tsx](file:///e:/Projects/str-website/components/admin/EventsManager.tsx): Full-featured Community Events CMS with Cloudinary poster upload and agenda builder.
-  - [HeroManager.tsx](file:///e:/Projects/str-website/components/admin/HeroManager.tsx): Live hero copy, metrics, and CTA editor.
-  - [GalleryManager.tsx](file:///e:/Projects/str-website/components/admin/GalleryManager.tsx): Album & Photo CMS with 100% dynamic categories and strict album isolation.
-  - [MultiCloudinaryUploader.tsx](file:///e:/Projects/str-website/components/admin/MultiCloudinaryUploader.tsx) & [CloudinaryUploader.tsx](file:///e:/Projects/str-website/components/admin/CloudinaryUploader.tsx): Direct Cloudinary uploader with automatic category synchronization.
-  - [NewsManager.tsx](file:///e:/Projects/str-website/components/admin/NewsManager.tsx): News publication suite with status toggles.
-  - [LeadsManager.tsx](file:///e:/Projects/str-website/components/admin/LeadsManager.tsx): Lead queries and CSV export.
+- Replaced single-page state tab switching with full Next.js App Router sub-routes (`/admin`, `/admin/hero`, `/admin/events`, `/admin/bookings`, `/admin/gallery`, `/admin/news`, `/admin/leads`, `/admin/settings`).
+- Created `app/admin/layout.tsx` for shared authentication guards, badge counts, and dynamic breadcrumb headers.
+- Pinned bottom action buttons (**View Live Website** & **Sign Out**) with a scrollable middle navigation menu in `AdminSidebar.tsx`.
 
 ---
 
-### ✅ 6. Build Verification Results
+### ✅ 5. Build Verification Results
 
 - **Command:** `npm run build`
-- **Output:** Clean build with 0 errors across all routes:
-  - 28 prerendered pages (including `/admin`, `/privacy`, `/terms`, `/events/[slug]`, `/news/[slug]`)
-  - Dynamic SSG/ISR routes with hourly revalidation
-  - Dynamic API route handlers (`/api/events`, `/api/membership`, `/api/contact`, `/api/newsletter`)
+- **Output:** Clean build with 0 errors across all 40 routes:
+  - 40 prerendered pages and dynamic SSG/ISR routes
+  - Dynamic API route handlers (`/api/events`, `/api/events/register`, `/api/membership`, `/api/contact`, `/api/newsletter`)
   - Metadata endpoints (`sitemap.xml`, `robots.txt`, `manifest.webmanifest`, `llms.txt`, `favicon.ico`)
 - **TypeScript:** Strict type checking passed with 0 errors.
