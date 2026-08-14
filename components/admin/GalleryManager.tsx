@@ -575,11 +575,11 @@ export default function GalleryManager() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           {/* Quick Multi-Upload Button */}
           <button
             onClick={() => handleOpenMultiUpload(activePhotoCategory !== 'All' ? activePhotoCategory : undefined, activeAlbumFilter !== 'All' ? activeAlbumFilter : '')}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-[#C9A227] to-[#E8C468] text-[#0A1440] shadow-lg hover:brightness-110 transition-all transform hover:scale-[1.02]"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-[#C9A227] to-[#E8C468] text-[#0A1440] shadow-lg hover:brightness-110 transition-all transform hover:scale-[1.02]"
           >
             <Zap className="w-4 h-4" />
             <span>Multiple Photo Upload</span>
@@ -587,7 +587,7 @@ export default function GalleryManager() {
 
           <button
             onClick={handleOpenAddAlbum}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#121F54] hover:bg-[#1B3A6B] text-[#E8C468] border border-[#C9A227]/40 shadow-md transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#121F54] hover:bg-[#1B3A6B] text-[#E8C468] border border-[#C9A227]/40 shadow-md transition-all"
           >
             <FolderPlus className="w-4 h-4" />
             <span>Create New Album</span>
@@ -595,7 +595,7 @@ export default function GalleryManager() {
 
           <button
             onClick={() => handleOpenAddPhoto()}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#0A1440] text-slate-200 hover:text-white border border-white/10 transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#0A1440] text-slate-200 hover:text-white border border-white/10 transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>Single Photo</span>
@@ -622,41 +622,44 @@ export default function GalleryManager() {
       )}
 
       {/* Sub-Navigation Tabs */}
-      <div className="flex border-b border-white/10 gap-4 text-xs sm:text-sm font-semibold">
+      <div className="flex border-b border-white/10 gap-2 sm:gap-6 text-xs sm:text-sm font-semibold overflow-x-auto whitespace-nowrap scrollbar-none pb-1 w-full max-w-full">
         <button
           onClick={() => setSubTab('albums')}
-          className={`pb-3 flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-3 flex items-center gap-1.5 border-b-2 shrink-0 transition-colors ${
             subTab === 'albums'
               ? 'border-[#C9A227] text-[#E8C468]'
               : 'border-transparent text-slate-400 hover:text-white'
           }`}
         >
-          <Folder className="w-4 h-4" />
-          <span>Albums & Collections ({albums.length})</span>
+          <Folder className="w-4 h-4 text-[#E8C468]" />
+          <span className="hidden sm:inline">Albums &amp; Collections ({albums.length})</span>
+          <span className="sm:hidden">Albums ({albums.length})</span>
         </button>
 
         <button
           onClick={() => setSubTab('photos')}
-          className={`pb-3 flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-3 flex items-center gap-1.5 border-b-2 shrink-0 transition-colors ${
             subTab === 'photos'
               ? 'border-[#C9A227] text-[#E8C468]'
               : 'border-transparent text-slate-400 hover:text-white'
           }`}
         >
-          <Images className="w-4 h-4" />
-          <span>All Photos ({photos.length})</span>
+          <Images className="w-4 h-4 text-[#E8C468]" />
+          <span className="hidden sm:inline">All Photos ({photos.length})</span>
+          <span className="sm:hidden">Photos ({photos.length})</span>
         </button>
 
         <button
           onClick={() => setSubTab('categories')}
-          className={`pb-3 flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-3 flex items-center gap-1.5 border-b-2 shrink-0 transition-colors ${
             subTab === 'categories'
               ? 'border-[#C9A227] text-[#E8C468]'
               : 'border-transparent text-slate-400 hover:text-white'
           }`}
         >
-          <Settings2 className="w-4 h-4" />
-          <span>Category Settings ({categories.filter((c) => c !== 'All').length})</span>
+          <Settings2 className="w-4 h-4 text-[#E8C468]" />
+          <span className="hidden sm:inline">Category Settings ({categories.filter((c) => c !== 'All').length})</span>
+          <span className="sm:hidden">Categories ({categories.filter((c) => c !== 'All').length})</span>
         </button>
       </div>
 
@@ -667,15 +670,15 @@ export default function GalleryManager() {
         <div className="space-y-6">
           {/* Filter Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#121F54]/70 border border-[#1B3A6B] p-4 rounded-2xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-slate-400 font-semibold mr-1 flex items-center gap-1">
+            <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none pb-1 max-w-full">
+              <span className="text-xs text-slate-400 font-semibold mr-1 flex items-center gap-1 shrink-0">
                 <Filter className="w-3.5 h-3.5 text-[#C9A227]" /> Category:
               </span>
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveAlbumCategory(cat)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                  className={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 transition-all ${
                     activeAlbumCategory === cat
                       ? 'bg-[#C9A227] text-[#0A1440] font-bold shadow-md'
                       : 'bg-[#0A1440] text-slate-300 hover:text-white border border-white/10'
@@ -761,9 +764,11 @@ export default function GalleryManager() {
                       </div>
 
                       <div className="p-5 space-y-2">
-                        <div className="flex items-center justify-between text-xs text-slate-400">
-                          <span>{alb.date}</span>
-                          <span className="text-[#E8C468] font-mono text-[11px]">/gallery/{alb.slug}</span>
+                        <div className="flex items-center justify-between text-xs text-slate-400 gap-2">
+                          <span className="font-semibold text-slate-300 shrink-0">{alb.date}</span>
+                          <span className="text-[#E8C468] font-mono text-[10px] sm:text-[11px] bg-[#0A1440] px-2 py-0.5 rounded border border-[#C9A227]/30 shrink-0">
+                            /{alb.slug}
+                          </span>
                         </div>
 
                         <h3 className="text-base font-serif font-bold text-white line-clamp-1">

@@ -609,11 +609,11 @@ export default function EventsManager() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex rounded-xl bg-[#0A1440] p-1 border border-white/10">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          <div className="flex rounded-xl bg-[#0A1440] p-1 border border-white/10 overflow-x-auto w-full sm:w-auto">
             <button
               onClick={() => setActiveSubTab("events")}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap flex-1 sm:flex-initial ${
                 activeSubTab === "events"
                   ? "bg-gradient-to-r from-[#C9A227] to-[#E8C468] text-[#0A1440] shadow"
                   : "text-slate-300 hover:text-white"
@@ -625,7 +625,7 @@ export default function EventsManager() {
 
             <button
               onClick={() => setActiveSubTab("categories")}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap flex-1 sm:flex-initial ${
                 activeSubTab === "categories"
                   ? "bg-gradient-to-r from-[#C9A227] to-[#E8C468] text-[#0A1440] shadow"
                   : "text-slate-300 hover:text-white"
@@ -641,7 +641,7 @@ export default function EventsManager() {
           {activeSubTab === "events" && (
             <button
               onClick={handleOpenAdd}
-              className="px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-[#C9A227] to-[#E8C468] text-[#0A1440] hover:brightness-110 shadow-lg flex items-center gap-1.5 transition-all shrink-0"
+              className="px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-[#C9A227] to-[#E8C468] text-[#0A1440] hover:brightness-110 shadow-lg flex items-center justify-center gap-1.5 transition-all shrink-0 w-full sm:w-auto"
             >
               <Plus className="w-4 h-4" />
               <span>Add Event</span>
@@ -1368,15 +1368,15 @@ export default function EventsManager() {
                 {form.ticketTiers && form.ticketTiers.length > 0 ? (
                   <div className="space-y-2">
                     {form.ticketTiers.map((tier, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
+                      <div key={idx} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-[#0A1440] p-2.5 rounded-lg border border-white/10">
                         <input
                           type="text"
                           value={tier.name}
                           onChange={(e) =>
                             handleUpdateTicketTier(idx, "name", e.target.value)
                           }
-                          placeholder="Option Name (e.g. Adult ticket rate, Couple pass, Family ticket...)"
-                          className="flex-1 px-3 py-2 rounded-lg bg-[#121F54] border border-white/10 text-white text-xs focus:outline-none focus:border-[#C9A227]"
+                          placeholder="Option Name (e.g. Adult ticket rate, Couple pass...)"
+                          className="flex-1 w-full px-3 py-2 rounded-lg bg-[#121F54] border border-white/10 text-white text-xs focus:outline-none focus:border-[#C9A227]"
                         />
                         <input
                           type="text"
@@ -1385,15 +1385,16 @@ export default function EventsManager() {
                             handleUpdateTicketTier(idx, "price", e.target.value)
                           }
                           placeholder="Rate (e.g. £15, £30, Free...)"
-                          className="w-28 sm:w-36 px-3 py-2 rounded-lg bg-[#121F54] border border-white/10 text-[#E8C468] font-bold text-xs focus:outline-none focus:border-[#C9A227]"
+                          className="w-full sm:w-36 px-3 py-2 rounded-lg bg-[#121F54] border border-white/10 text-[#E8C468] font-bold text-xs focus:outline-none focus:border-[#C9A227]"
                         />
                         <button
                           type="button"
                           onClick={() => handleRemoveTicketTier(idx)}
-                          className="p-2 rounded-lg text-rose-400 hover:text-rose-200 hover:bg-[#8B1A2B]/40 transition-colors"
+                          className="p-2 rounded-lg text-rose-400 hover:text-rose-200 hover:bg-[#8B1A2B]/40 transition-colors self-end sm:self-center flex items-center gap-1 text-xs"
                           title="Remove option"
                         >
                           <Trash2 className="w-4 h-4" />
+                          <span className="sm:hidden text-rose-300">Remove Option</span>
                         </button>
                       </div>
                     ))}
@@ -1529,7 +1530,7 @@ export default function EventsManager() {
                   {form.agenda.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-3 bg-[#0A1440] p-2.5 rounded-lg border border-white/10"
+                      className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-[#0A1440] p-2.5 rounded-lg border border-white/10"
                     >
                       <input
                         type="text"
@@ -1538,7 +1539,7 @@ export default function EventsManager() {
                           handleAgendaChange(idx, "time", e.target.value)
                         }
                         placeholder="Time (e.g. 10:00 AM)"
-                        className="w-36 px-2.5 py-1.5 rounded bg-[#121F54] border border-white/10 text-xs text-white focus:outline-none focus:border-[#C9A227]"
+                        className="w-full sm:w-36 px-2.5 py-1.5 rounded bg-[#121F54] border border-white/10 text-xs text-white focus:outline-none focus:border-[#C9A227]"
                       />
                       <input
                         type="text"
@@ -1546,16 +1547,17 @@ export default function EventsManager() {
                         onChange={(e) =>
                           handleAgendaChange(idx, "activity", e.target.value)
                         }
-                        placeholder="Activity (e.g. Traditional Pongal Pot Preparation)"
-                        className="flex-1 px-2.5 py-1.5 rounded bg-[#121F54] border border-white/10 text-xs text-white focus:outline-none focus:border-[#C9A227]"
+                        placeholder="Activity (e.g. Traditional Welcome & Invocational Music)"
+                        className="flex-1 w-full px-2.5 py-1.5 rounded bg-[#121F54] border border-white/10 text-xs text-white focus:outline-none focus:border-[#C9A227]"
                       />
                       <button
                         type="button"
                         onClick={() => handleRemoveAgendaItem(idx)}
-                        className="p-1.5 text-rose-400 hover:text-rose-200 rounded"
+                        className="p-1.5 text-rose-400 hover:text-rose-200 rounded self-end sm:self-center flex items-center gap-1 text-xs"
                         title="Remove item"
                       >
                         <MinusCircle className="w-4 h-4" />
+                        <span className="sm:hidden text-rose-300">Remove</span>
                       </button>
                     </div>
                   ))}

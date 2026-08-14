@@ -174,10 +174,10 @@ export default function LeadsManager() {
 
         <button
           onClick={exportToCSV}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#121F54] hover:bg-[#1B3A6B] text-[#E8C468] border border-[#C9A227]/40 shadow-md transition-all"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#121F54] hover:bg-[#1B3A6B] text-[#E8C468] border border-[#C9A227]/40 shadow-md transition-all shrink-0"
         >
           <Download className="w-4 h-4" />
-          <span>Export {activeTab.toUpperCase()} to CSV</span>
+          <span>Export CSV ({activeTab})</span>
         </button>
       </div>
 
@@ -301,171 +301,292 @@ export default function LeadsManager() {
           <p className="text-sm text-slate-300">Loading Leads...</p>
         </div>
       ) : activeTab === 'members' ? (
-        /* Members Table */
-        <div className="bg-[#121F54] border border-[#1B3A6B] rounded-2xl overflow-hidden shadow-xl">
+        /* Members View */
+        <div className="space-y-4">
           {filteredMembers.length === 0 ? (
-            <div className="py-16 text-center text-slate-400 text-sm">
+            <div className="bg-[#121F54] border border-[#1B3A6B] rounded-2xl p-12 text-center text-slate-400 text-sm">
               No membership registrations found.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-200">
-                <thead className="bg-[#0A1440] uppercase tracking-wider text-[10px] text-slate-400 font-bold border-b border-[#1B3A6B]">
-                  <tr>
-                    <th className="px-5 py-4">Applicant</th>
-                    <th className="px-5 py-4">Contact</th>
-                    <th className="px-5 py-4">City / Postcode</th>
-                    <th className="px-5 py-4">Tier</th>
-                    <th className="px-5 py-4">Date</th>
-                    <th className="px-5 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/10">
-                  {filteredMembers.map((m) => (
-                    <tr key={m._id} className="hover:bg-[#1B3A6B]/30 transition-colors">
-                      <td className="px-5 py-4 font-bold text-white">
-                        <div>{m.fullName}</div>
-                        <div className="text-[11px] text-slate-400 font-normal">
+            <>
+              {/* Mobile Cards (lg:hidden) */}
+              <div className="grid grid-cols-1 gap-4 lg:hidden">
+                {filteredMembers.map((m) => (
+                  <div key={m._id} className="bg-[#121F54] border border-[#1B3A6B] p-4 rounded-2xl space-y-3 shadow-lg">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="font-bold text-white text-sm">{m.fullName}</h4>
+                        <span className="text-[11px] text-slate-400 font-normal">
                           {(m.interests || []).slice(0, 2).join(', ')}
-                        </div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="text-slate-200">{m.email}</div>
-                        <div className="text-slate-400 text-[11px]">{m.phone}</div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <div>{m.city}</div>
-                        <div className="text-slate-400 text-[11px]">{m.postcode}</div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#1B3A6B] text-[#E8C468] border border-[#C9A227]/30">
-                          {m.tier}
                         </span>
-                      </td>
-                      <td className="px-5 py-4 text-slate-400">
-                        {new Date(m.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => setSelectedLead(m)}
-                            className="p-1.5 rounded-lg bg-[#1B3A6B] hover:bg-[#C9A227] hover:text-[#0A1440] text-slate-200 transition-colors"
-                            title="View Full Profile"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete('member', m._id)}
-                            className="p-1.5 rounded-lg bg-[#8B1A2B]/40 hover:bg-[#8B1A2B] text-rose-300 hover:text-white transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#1B3A6B] text-[#E8C468] border border-[#C9A227]/30">
+                        {m.tier}
+                      </span>
+                    </div>
+
+                    <div className="text-xs space-y-1 pt-2 border-t border-white/10 text-slate-300">
+                      <div><span className="text-slate-400">Email:</span> {m.email}</div>
+                      <div><span className="text-slate-400">Phone:</span> {m.phone}</div>
+                      <div><span className="text-slate-400">Location:</span> {m.city} ({m.postcode})</div>
+                      <div><span className="text-slate-400">Date:</span> {new Date(m.createdAt).toLocaleDateString()}</div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+                      <button
+                        onClick={() => setSelectedLead(m)}
+                        className="px-3 py-1.5 rounded-lg bg-[#1B3A6B] hover:bg-[#C9A227] hover:text-[#0A1440] text-slate-200 text-xs font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>View Profile</span>
+                      </button>
+                      <button
+                        onClick={() => handleDelete('member', m._id)}
+                        className="px-3 py-1.5 rounded-lg bg-[#8B1A2B]/40 hover:bg-[#8B1A2B] text-rose-300 text-xs font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table (hidden lg:block) */}
+              <div className="hidden lg:block bg-[#121F54] border border-[#1B3A6B] rounded-2xl overflow-hidden shadow-xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs text-slate-200">
+                    <thead className="bg-[#0A1440] uppercase tracking-wider text-[10px] text-slate-400 font-bold border-b border-[#1B3A6B]">
+                      <tr>
+                        <th className="px-5 py-4">Applicant</th>
+                        <th className="px-5 py-4">Contact</th>
+                        <th className="px-5 py-4">City / Postcode</th>
+                        <th className="px-5 py-4">Tier</th>
+                        <th className="px-5 py-4">Date</th>
+                        <th className="px-5 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/10">
+                      {filteredMembers.map((m) => (
+                        <tr key={m._id} className="hover:bg-[#1B3A6B]/30 transition-colors">
+                          <td className="px-5 py-4 font-bold text-white">
+                            <div>{m.fullName}</div>
+                            <div className="text-[11px] text-slate-400 font-normal">
+                              {(m.interests || []).slice(0, 2).join(', ')}
+                            </div>
+                          </td>
+                          <td className="px-5 py-4">
+                            <div className="text-slate-200">{m.email}</div>
+                            <div className="text-slate-400 text-[11px]">{m.phone}</div>
+                          </td>
+                          <td className="px-5 py-4">
+                            <div>{m.city}</div>
+                            <div className="text-slate-400 text-[11px]">{m.postcode}</div>
+                          </td>
+                          <td className="px-5 py-4">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#1B3A6B] text-[#E8C468] border border-[#C9A227]/30">
+                              {m.tier}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 text-slate-400">
+                            {new Date(m.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-5 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => setSelectedLead(m)}
+                                className="p-1.5 rounded-lg bg-[#1B3A6B] hover:bg-[#C9A227] hover:text-[#0A1440] text-slate-200 transition-colors"
+                                title="View Full Profile"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete('member', m._id)}
+                                className="p-1.5 rounded-lg bg-[#8B1A2B]/40 hover:bg-[#8B1A2B] text-rose-300 hover:text-white transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           )}
         </div>
       ) : activeTab === 'messages' ? (
-        /* Messages Table */
-        <div className="bg-[#121F54] border border-[#1B3A6B] rounded-2xl overflow-hidden shadow-xl">
+        /* Messages View */
+        <div className="space-y-4">
           {filteredMessages.length === 0 ? (
-            <div className="py-16 text-center text-slate-400 text-sm">No messages found.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-200">
-                <thead className="bg-[#0A1440] uppercase tracking-wider text-[10px] text-slate-400 font-bold border-b border-[#1B3A6B]">
-                  <tr>
-                    <th className="px-5 py-4">Sender</th>
-                    <th className="px-5 py-4">Subject</th>
-                    <th className="px-5 py-4">Message Excerpt</th>
-                    <th className="px-5 py-4">Date</th>
-                    <th className="px-5 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/10">
-                  {filteredMessages.map((m) => (
-                    <tr key={m._id} className="hover:bg-[#1B3A6B]/30 transition-colors">
-                      <td className="px-5 py-4 font-bold text-white">
-                        <div>{m.fullName}</div>
-                        <div className="text-[11px] text-slate-400 font-normal">{m.email} • {m.city}</div>
-                      </td>
-                      <td className="px-5 py-4 text-[#E8C468] font-semibold">{m.subject}</td>
-                      <td className="px-5 py-4 text-slate-300 max-w-xs truncate">{m.message}</td>
-                      <td className="px-5 py-4 text-slate-400">
-                        {new Date(m.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => setSelectedLead(m)}
-                            className="p-1.5 rounded-lg bg-[#1B3A6B] hover:bg-[#C9A227] hover:text-[#0A1440] text-slate-200 transition-colors"
-                            title="View Full Message"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete('message', m._id)}
-                            className="p-1.5 rounded-lg bg-[#8B1A2B]/40 hover:bg-[#8B1A2B] text-rose-300 hover:text-white transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="bg-[#121F54] border border-[#1B3A6B] rounded-2xl p-12 text-center text-slate-400 text-sm">
+              No messages found.
             </div>
+          ) : (
+            <>
+              {/* Mobile Cards (lg:hidden) */}
+              <div className="grid grid-cols-1 gap-4 lg:hidden">
+                {filteredMessages.map((m) => (
+                  <div key={m._id} className="bg-[#121F54] border border-[#1B3A6B] p-4 rounded-2xl space-y-3 shadow-lg">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="font-bold text-white text-sm">{m.fullName}</h4>
+                        <span className="text-xs text-slate-400">{m.email} • {m.city}</span>
+                      </div>
+                      <span className="text-[11px] text-slate-400">{new Date(m.createdAt).toLocaleDateString()}</span>
+                    </div>
+
+                    <div className="text-xs font-semibold text-[#E8C468]">{m.subject}</div>
+                    <p className="text-xs text-slate-300 line-clamp-2">{m.message}</p>
+
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+                      <button
+                        onClick={() => setSelectedLead(m)}
+                        className="px-3 py-1.5 rounded-lg bg-[#1B3A6B] hover:bg-[#C9A227] hover:text-[#0A1440] text-slate-200 text-xs font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>View Message</span>
+                      </button>
+                      <button
+                        onClick={() => handleDelete('message', m._id)}
+                        className="px-3 py-1.5 rounded-lg bg-[#8B1A2B]/40 hover:bg-[#8B1A2B] text-rose-300 text-xs font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table (hidden lg:block) */}
+              <div className="hidden lg:block bg-[#121F54] border border-[#1B3A6B] rounded-2xl overflow-hidden shadow-xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs text-slate-200">
+                    <thead className="bg-[#0A1440] uppercase tracking-wider text-[10px] text-slate-400 font-bold border-b border-[#1B3A6B]">
+                      <tr>
+                        <th className="px-5 py-4">Sender</th>
+                        <th className="px-5 py-4">Subject</th>
+                        <th className="px-5 py-4">Message Excerpt</th>
+                        <th className="px-5 py-4">Date</th>
+                        <th className="px-5 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/10">
+                      {filteredMessages.map((m) => (
+                        <tr key={m._id} className="hover:bg-[#1B3A6B]/30 transition-colors">
+                          <td className="px-5 py-4 font-bold text-white">
+                            <div>{m.fullName}</div>
+                            <div className="text-[11px] text-slate-400 font-normal">{m.email} • {m.city}</div>
+                          </td>
+                          <td className="px-5 py-4 text-[#E8C468] font-semibold">{m.subject}</td>
+                          <td className="px-5 py-4 text-slate-300 max-w-xs truncate">{m.message}</td>
+                          <td className="px-5 py-4 text-slate-400">
+                            {new Date(m.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-5 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => setSelectedLead(m)}
+                                className="p-1.5 rounded-lg bg-[#1B3A6B] hover:bg-[#C9A227] hover:text-[#0A1440] text-slate-200 transition-colors"
+                                title="View Full Message"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete('message', m._id)}
+                                className="p-1.5 rounded-lg bg-[#8B1A2B]/40 hover:bg-[#8B1A2B] text-rose-300 hover:text-white transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           )}
         </div>
       ) : (
-        /* Subscribers Table */
-        <div className="bg-[#121F54] border border-[#1B3A6B] rounded-2xl overflow-hidden shadow-xl">
+        /* Subscribers View */
+        <div className="space-y-4">
           {filteredSubscribers.length === 0 ? (
-            <div className="py-16 text-center text-slate-400 text-sm">No subscribers found.</div>
+            <div className="bg-[#121F54] border border-[#1B3A6B] rounded-2xl p-12 text-center text-slate-400 text-sm">
+              No subscribers found.
+            </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-200">
-                <thead className="bg-[#0A1440] uppercase tracking-wider text-[10px] text-slate-400 font-bold border-b border-[#1B3A6B]">
-                  <tr>
-                    <th className="px-5 py-4">Subscriber Email</th>
-                    <th className="px-5 py-4">Status</th>
-                    <th className="px-5 py-4">Joined Date</th>
-                    <th className="px-5 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/10">
-                  {filteredSubscribers.map((s) => (
-                    <tr key={s._id} className="hover:bg-[#1B3A6B]/30 transition-colors">
-                      <td className="px-5 py-4 font-bold text-white">{s.email}</td>
-                      <td className="px-5 py-4">
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-900/40 text-emerald-300 border border-emerald-500/30">
+            <>
+              {/* Mobile Cards (lg:hidden) */}
+              <div className="grid grid-cols-1 gap-4 lg:hidden">
+                {filteredSubscribers.map((s) => (
+                  <div key={s._id} className="bg-[#121F54] border border-[#1B3A6B] p-4 rounded-2xl flex items-center justify-between shadow-lg">
+                    <div>
+                      <h4 className="font-bold text-white text-sm">{s.email}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-900/40 text-emerald-300 border border-emerald-500/30">
                           Active
                         </span>
-                      </td>
-                      <td className="px-5 py-4 text-slate-400">
-                        {new Date(s.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <button
-                          onClick={() => handleDelete('subscriber', s._id)}
-                          className="p-1.5 rounded-lg bg-[#8B1A2B]/40 hover:bg-[#8B1A2B] text-rose-300 hover:text-white transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                        <span className="text-[11px] text-slate-400">{new Date(s.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDelete('subscriber', s._id)}
+                      className="p-2 rounded-lg bg-[#8B1A2B]/40 hover:bg-[#8B1A2B] text-rose-300 transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table (hidden lg:block) */}
+              <div className="hidden lg:block bg-[#121F54] border border-[#1B3A6B] rounded-2xl overflow-hidden shadow-xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs text-slate-200">
+                    <thead className="bg-[#0A1440] uppercase tracking-wider text-[10px] text-slate-400 font-bold border-b border-[#1B3A6B]">
+                      <tr>
+                        <th className="px-5 py-4">Subscriber Email</th>
+                        <th className="px-5 py-4">Status</th>
+                        <th className="px-5 py-4">Joined Date</th>
+                        <th className="px-5 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/10">
+                      {filteredSubscribers.map((s) => (
+                        <tr key={s._id} className="hover:bg-[#1B3A6B]/30 transition-colors">
+                          <td className="px-5 py-4 font-bold text-white">{s.email}</td>
+                          <td className="px-5 py-4">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-900/40 text-emerald-300 border border-emerald-500/30">
+                              Active
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 text-slate-400">
+                            {new Date(s.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-5 py-4 text-right">
+                            <button
+                              onClick={() => handleDelete('subscriber', s._id)}
+                              className="p-1.5 rounded-lg bg-[#8B1A2B]/40 hover:bg-[#8B1A2B] text-rose-300 hover:text-white transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           )}
         </div>
       )}
