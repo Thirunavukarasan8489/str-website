@@ -84,3 +84,67 @@ body {
     linear-gradient(rgba(201, 162, 39, 0.15) 2px, transparent 2px);
   background-size: 40px 40px, 40px 40px, 120px 120px, 120px 120px;
 }
+
+/* Print Styles - Only Ticket Card Prints Cleanly */
+.print-only {
+  display: none;
+}
+
+@media print {
+  body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  header,
+  footer,
+  nav,
+  .print-hidden,
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    padding-top: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .printable-ticket-card {
+    background-color: #FFFFFF !important;
+    color: #0A1440 !important;
+    border: 2px solid #C9A227 !important;
+    box-shadow: none !important;
+    padding: 24px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 16px !important;
+    page-break-inside: avoid !important;
+  }
+
+  .printable-ticket-card * {
+    color: #0A1440 !important;
+  }
+
+  .printable-ticket-card .gold-text {
+    color: #B38914 !important;
+  }
+
+  .printable-ticket-card .badge-confirmed {
+    border: 1.5px solid #059669 !important;
+    background-color: #ECFDF5 !important;
+    color: #047857 !important;
+  }
+
+  .printable-ticket-card .ticket-bg-box {
+    background-color: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+  }
+}
+

@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Calendar, MapPin, Clock, ArrowRight, Ticket } from "lucide-react";
 import { EventItem } from "@/types";
-import { formatDate } from "@/lib/utils";
+import { formatDate, parseTicketTiers } from "@/lib/utils";
 
 interface EventCardProps {
   event: EventItem;
@@ -68,9 +68,27 @@ export default function EventCard({ event }: EventCardProps) {
           </div>
 
           <div className="flex items-center justify-between pt-1">
-            <span className="text-xs font-semibold text-slate-300">
-              {event.price || "Free Admission"}
-            </span>
+            {(() => {
+              const tiers = parseTicketTiers(event.price, event.ticketTiers);
+              if (tiers.length > 1) {
+                return (
+                  <span className="text-xs font-semibold text-[#E8C468] truncate max-w-[65%]" title={event.price}>
+                    {tiers[0].price ? `${tiers[0].price} standard` : tiers[0].name} ({tiers.length} pass options)
+                  </span>
+                );
+              } else if (tiers.length === 1) {
+                return (
+                  <span className="text-xs font-semibold text-[#E8C468] truncate max-w-[65%]">
+                    {tiers[0].name} {tiers[0].price ? `- ${tiers[0].price}` : ''}
+                  </span>
+                );
+              }
+              return (
+                <span className="text-xs font-semibold text-slate-300 truncate max-w-[65%]">
+                  {event.price || "Free Admission"}
+                </span>
+              );
+            })()}
             <Link
               href={`/events/${event.slug}`}
               className="inline-flex items-center gap-1 text-xs font-bold text-[#E8C468] group-hover:text-[#C9A227] hover:underline"

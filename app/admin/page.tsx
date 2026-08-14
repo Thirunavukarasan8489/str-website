@@ -5,6 +5,7 @@ import AdminSidebar, { AdminTab } from '@/components/admin/AdminSidebar';
 import AdminOverview from '@/components/admin/AdminOverview';
 import HeroManager from '@/components/admin/HeroManager';
 import EventsManager from '@/components/admin/EventsManager';
+import EventBookingsManager from '@/components/admin/EventBookingsManager';
 import GalleryManager from '@/components/admin/GalleryManager';
 import NewsManager from '@/components/admin/NewsManager';
 import LeadsManager from '@/components/admin/LeadsManager';
@@ -19,6 +20,7 @@ export default function AdminPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [eventsCount, setEventsCount] = useState(0);
+  const [bookingsCount, setBookingsCount] = useState(0);
   const [leadsCount, setLeadsCount] = useState(0);
   const [newsCount, setNewsCount] = useState(0);
   const [galleryCount, setGalleryCount] = useState(0);
@@ -40,21 +42,24 @@ export default function AdminPage() {
 
   const loadBadges = async () => {
     try {
-      const [leadsRes, newsRes, galleryRes, eventsRes] = await Promise.all([
+      const [leadsRes, newsRes, galleryRes, eventsRes, bookingsRes] = await Promise.all([
         fetch('/api/admin/leads'),
         fetch('/api/admin/news'),
         fetch('/api/admin/gallery'),
         fetch('/api/admin/events'),
+        fetch('/api/events/register'),
       ]);
       const leads = await leadsRes.json();
       const news = await newsRes.json();
       const gallery = await galleryRes.json();
       const events = await eventsRes.json();
+      const bookings = await bookingsRes.json();
 
       setLeadsCount((leads.members?.length || 0) + (leads.messages?.length || 0));
       setNewsCount(news.articles?.length || 0);
       setGalleryCount(gallery.items?.length || 0);
       setEventsCount(events.events?.length || 0);
+      setBookingsCount(bookings.registrations?.length || 0);
     } catch (err) {
       console.error('Error loading badge stats', err);
     }
@@ -95,6 +100,7 @@ export default function AdminPage() {
         activeTab={activeTab}
         onSelectTab={(tab) => setActiveTab(tab)}
         eventsCount={eventsCount}
+        bookingsCount={bookingsCount}
         leadsCount={leadsCount}
         newsCount={newsCount}
         galleryCount={galleryCount}
@@ -122,6 +128,8 @@ export default function AdminPage() {
                   ? 'Hero Section'
                   : activeTab === 'events'
                   ? 'Events & Galas'
+                  : activeTab === 'bookings'
+                  ? 'Ticket Bookings'
                   : activeTab === 'leads'
                   ? 'Leads & Inquiries'
                   : activeTab}
@@ -154,6 +162,7 @@ export default function AdminPage() {
           {activeTab === 'overview' && <AdminOverview onSelectTab={setActiveTab} />}
           {activeTab === 'hero' && <HeroManager />}
           {activeTab === 'events' && <EventsManager />}
+          {activeTab === 'bookings' && <EventBookingsManager />}
           {activeTab === 'gallery' && <GalleryManager />}
           {activeTab === 'news' && <NewsManager />}
           {activeTab === 'leads' && <LeadsManager />}

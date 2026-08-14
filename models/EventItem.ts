@@ -18,6 +18,7 @@ export interface IEventItem extends Document {
   registrationOpen: boolean;
   ticketLink?: string;
   price?: string;
+  ticketTiers?: { name: string; price: string }[];
   agenda?: { time: string; activity: string }[];
   order: number;
   createdAt: Date;
@@ -28,6 +29,14 @@ const AgendaSchema = new Schema(
   {
     time: { type: String, required: true },
     activity: { type: String, required: true },
+  },
+  { _id: false }
+);
+
+const TicketTierSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    price: { type: String, required: true },
   },
   { _id: false }
 );
@@ -51,6 +60,7 @@ const EventItemSchema = new Schema<IEventItem>(
     registrationOpen: { type: Boolean, default: true },
     ticketLink: { type: String, default: '' },
     price: { type: String, default: '' },
+    ticketTiers: { type: [TicketTierSchema], default: [] },
     agenda: { type: [AgendaSchema], default: [] },
     order: { type: Number, default: 0 },
   },

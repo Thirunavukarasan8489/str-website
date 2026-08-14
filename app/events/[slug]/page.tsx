@@ -8,7 +8,7 @@ import CTAButton from '@/components/shared/CTAButton';
 import SEOSchema from '@/components/shared/SEOSchema';
 import { getEventSchema, getBreadcrumbSchema } from '@/lib/seo';
 import { getEventBySlug, getEventsList } from '@/lib/contentService';
-import { formatDate } from '@/lib/utils';
+import { formatDate, parseTicketTiers } from '@/lib/utils';
 
 export const revalidate = 60; // ISR revalidate every 60 seconds
 
@@ -169,19 +169,50 @@ export default async function SingleEventPage({ params }: Props) {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <Ticket className="w-5 h-5 text-[#C9A227] shrink-0 mt-0.5" />
-                    <div>
-                      <span className="block font-bold text-white">Ticket Price</span>
-                      <span className="text-[#E8C468] font-bold">{event.price || 'Free'}</span>
+                  {/* Ticket Price Section */}
+                  <div className="pt-2 border-t border-white/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Ticket className="w-5 h-5 text-[#C9A227] shrink-0" />
+                      <span className="font-serif font-bold text-white text-base">Ticket Prices &amp; Passes</span>
                     </div>
+
+                    {(() => {
+                      const tiers = parseTicketTiers(event.price, event.ticketTiers);
+                      if (tiers && tiers.length > 0) {
+                        return (
+                          <div className="space-y-2 bg-[#0A1440]/70 p-3.5 rounded-xl border border-white/10 mt-2">
+                            {tiers.map((tier, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between gap-3 text-xs border-b border-white/5 pb-2 last:border-0 last:pb-0"
+                              >
+                                <div className="flex items-center gap-2 text-slate-200">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227] shrink-0" />
+                                  <span className="font-semibold">{tier.name}</span>
+                                </div>
+                                {tier.price && (
+                                  <span className="font-bold text-[#E8C468] bg-[#1B3A6B] px-2.5 py-0.5 rounded text-[11px] border border-[#C9A227]/30 shrink-0 shadow-sm">
+                                    {tier.price}
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return (
+                        <span className="text-[#E8C468] font-bold text-sm block mt-1">
+                          {event.price || 'Free Admission'}
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
 
                 <div className="pt-4 border-t border-white/10">
                   {event.registrationOpen ? (
                     <CTAButton
-                      href={event.ticketLink || '/membership/join'}
+                      href={event.ticketLink || `/events/register?event=${event.slug}`}
                       variant="primary"
                       className="w-full text-center"
                     >

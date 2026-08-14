@@ -17,6 +17,7 @@ export interface EventItem {
   ticketLink?: string;
   registrationOpen: boolean;
   price?: string;
+  ticketTiers?: { name: string; price: string }[];
   agenda?: { time: string; activity: string }[];
 }
 

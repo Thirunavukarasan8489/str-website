@@ -15,14 +15,16 @@ import {
   ShieldCheck,
   ChevronRight,
   Calendar,
+  TicketCheck,
 } from 'lucide-react';
 
-export type AdminTab = 'overview' | 'hero' | 'events' | 'gallery' | 'news' | 'leads' | 'settings';
+export type AdminTab = 'overview' | 'hero' | 'events' | 'bookings' | 'gallery' | 'news' | 'leads' | 'settings';
 
 interface AdminSidebarProps {
   activeTab: AdminTab;
   onSelectTab: (tab: AdminTab) => void;
   eventsCount?: number;
+  bookingsCount?: number;
   leadsCount?: number;
   newsCount?: number;
   galleryCount?: number;
@@ -35,6 +37,7 @@ export default function AdminSidebar({
   activeTab,
   onSelectTab,
   eventsCount = 0,
+  bookingsCount = 0,
   leadsCount = 0,
   newsCount = 0,
   galleryCount = 0,
@@ -57,6 +60,7 @@ export default function AdminSidebar({
     { id: 'overview', label: 'Overview & Stats', icon: LayoutDashboard },
     { id: 'hero', label: 'Home Hero Section', icon: HomeIcon },
     { id: 'events', label: 'Events & Galas', icon: Calendar, badge: eventsCount },
+    { id: 'bookings', label: 'Ticket Bookings', icon: TicketCheck, badge: bookingsCount },
     { id: 'gallery', label: 'Photo Gallery', icon: ImageIcon, badge: galleryCount },
     { id: 'news', label: 'News & Media', icon: Newspaper, badge: newsCount },
     { id: 'leads', label: 'Leads & Enquiries', icon: Users, badge: leadsCount },

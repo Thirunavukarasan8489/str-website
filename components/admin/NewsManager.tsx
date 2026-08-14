@@ -46,6 +46,7 @@ export default function NewsManager() {
   const [showModal, setShowModal] = useState(false);
   const [editingArticle, setEditingArticle] = useState<NewsArticleData | null>(null);
   const [saving, setSaving] = useState(false);
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'All' | 'Published' | 'Draft'>('All');
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -95,6 +96,7 @@ export default function NewsManager() {
 
   const handleOpenAdd = () => {
     setEditingArticle(null);
+    setIsSlugManuallyEdited(false);
     setForm({
       title: '',
       slug: '',
@@ -113,6 +115,8 @@ export default function NewsManager() {
 
   const handleOpenEdit = (article: NewsArticleData) => {
     setEditingArticle(article);
+    const generateSlug = (t: string) => t.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+    setIsSlugManuallyEdited(article.slug !== generateSlug(article.title));
     setForm({
       id: article._id || article.id,
       title: article.title,
@@ -131,12 +135,13 @@ export default function NewsManager() {
 
   const handleTitleChange = (newTitle: string) => {
     setForm((prev) => {
-      const autoSlug = !editingArticle
+      const autoSlug = !isSlugManuallyEdited
         ? newTitle
             .toLowerCase()
             .trim()
             .replace(/[^\w\s-]/g, '')
             .replace(/[\s_-]+/g, '-')
+            .replace(/^-+|-+$/g, '')
         : prev.slug;
       return { ...prev, title: newTitle, slug: autoSlug };
     });
@@ -550,13 +555,31 @@ export default function NewsManager() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-200 uppercase tracking-wider mb-1">
-                    URL Slug
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-200 uppercase tracking-wider">
+                      URL Slug
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const synced = form.title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+                        setForm((prev) => ({ ...prev, slug: synced }));
+                        setIsSlugManuallyEdited(false);
+                      }}
+                      className="text-[10px] font-semibold text-[#E8C468] hover:text-[#C9A227] flex items-center gap-1 transition-colors cursor-pointer"
+                      title="Re-generate slug from title"
+                    >
+                      <Sparkles className="w-3 h-3 text-[#C9A227]" />
+                      <span>Auto-slug</span>
+                    </button>
+                  </div>
                   <input
                     type="text"
                     value={form.slug}
-                    onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                    onChange={(e) => {
+                      setIsSlugManuallyEdited(true);
+                      setForm({ ...form, slug: e.target.value });
+                    }}
                     placeholder="custom-url-slug"
                     className="w-full px-3 py-2 rounded-lg bg-[#0A1440] border border-white/10 text-white text-xs"
                   />

@@ -92,7 +92,10 @@ export default function MobileMenu({ isOpen, onClose, pathname }: MobileMenuProp
             <nav className="my-auto py-6 flex flex-col space-y-2">
               {navLinks.map((link, index) => {
                 const Icon = link.icon;
-                const isActive = pathname === link.href;
+                const isActive =
+                  link.href === '/'
+                    ? pathname === '/'
+                    : pathname === link.href || pathname.startsWith(`${link.href}/`);
                 return (
                   <motion.div
                     key={link.href}
