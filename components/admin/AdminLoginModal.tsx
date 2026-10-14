@@ -31,7 +31,7 @@ export default function AdminLoginModal({ onLoginSuccess }: AdminLoginModalProps
       if (res.ok && data.success) {
         onLoginSuccess();
       } else {
-        setError(data.message || 'Incorrect admin password. (Default: admin123)');
+        setError(data.message || 'Enter your admin password to access the dashboard.');
       }
     } catch (err: any) {
       setError('Network error during authentication.');
@@ -103,11 +103,11 @@ export default function AdminLoginModal({ onLoginSuccess }: AdminLoginModalProps
           </button>
         </form>
 
-        <div className="pt-4 border-t border-white/10 text-center">
+        {/* <div className="pt-4 border-t border-white/10 text-center">
           <p className="text-[11px] text-slate-400">
-            For password resets, check <code className="text-[#E8C468]">ADMIN_PASSWORD</code> in your environment file.
+            For password resets, check in your environment file.
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );
