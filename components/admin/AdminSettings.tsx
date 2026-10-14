@@ -89,15 +89,6 @@ export default function AdminSettings() {
             <p className="text-xs text-slate-300">Control who can access this dashboard and make live changes.</p>
           </div>
         </div>
-
-        <div className="p-4 rounded-xl bg-[#0A1440] border border-white/10 text-xs text-slate-300 space-y-2">
-          <p>
-            The default admin password is <code className="text-[#E8C468] font-bold bg-[#121F54] px-2 py-0.5 rounded">admin123</code>.
-          </p>
-          <p>
-            To change your password, add or update <code className="text-[#E8C468] font-bold bg-[#121F54] px-2 py-0.5 rounded">ADMIN_PASSWORD=your_new_secret</code> in your <code className="text-white">.env</code> file.
-          </p>
-        </div>
       </div>
     </div>
   );
