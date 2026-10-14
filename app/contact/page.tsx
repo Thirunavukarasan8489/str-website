@@ -250,8 +250,8 @@ export default function ContactPage() {
                     <Mail className="w-5 h-5 text-[#C9A227] shrink-0 mt-1" />
                     <div>
                       <span className="block font-bold text-white">General Email</span>
-                      <a href="mailto:contact@scotlandtamilsraise.org" className="text-[#E8C468] hover:underline">
-                        contact@scotlandtamilsraise.org
+                      <a href="mailto:info@scotlandtamilsraise.org.uk" className="text-[#E8C468] hover:underline">
+                        info@scotlandtamilsraise.org.uk
                       </a>
                     </div>
                   </div>
